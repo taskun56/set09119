@@ -3,7 +3,8 @@
 
 using namespace std;
 using namespace glm;
-namespace collision {
+namespace collision 
+{
 
 bool IsColliding(const cSphereCollider &c1, const cSphereCollider &c2, dvec3 &pos, dvec3 &norm, double &depth) {
   const dvec3 p1 = c1.GetParent()->GetPosition();
@@ -11,7 +12,8 @@ bool IsColliding(const cSphereCollider &c1, const cSphereCollider &c2, dvec3 &po
   const dvec3 d = p2 - p1;
   const double distance = glm::length(d);
   const double sumRadius = c1.radius + c2.radius;
-  if (distance < sumRadius) {
+  if (distance < sumRadius)
+  {
     depth = sumRadius - distance;
     norm = -glm::normalize(d);
     pos = p1 - norm * (c1.radius - depth * 0.5f);
@@ -20,7 +22,8 @@ bool IsColliding(const cSphereCollider &c1, const cSphereCollider &c2, dvec3 &po
   return false;
 }
 
-bool IsColliding(const cSphereCollider &s, const cPlaneCollider &p, dvec3 &pos, dvec3 &norm, double &depth) {
+bool IsColliding(const cSphereCollider &s, const cPlaneCollider &p, dvec3 &pos, dvec3 &norm, double &depth) 
+{
   const dvec3 sp = s.GetParent()->GetPosition();
   const dvec3 pp = p.GetParent()->GetPosition();
 
@@ -30,7 +33,8 @@ bool IsColliding(const cSphereCollider &s, const cPlaneCollider &p, dvec3 &pos, 
   // Calculate the distance: dot product of the new vector with the plane's normal
   double distance = dot(vecTemp, p.normal);
 
-  if (distance <= s.radius) {
+  if (distance <= s.radius)
+  {
     norm = p.normal;
     pos = sp - norm * distance;
     depth = s.radius - distance;

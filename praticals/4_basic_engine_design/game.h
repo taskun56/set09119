@@ -7,7 +7,8 @@
 
 class Entity;
 
-class Component {
+class Component 
+{
 protected:
   Entity *Ent_;
   bool active_;
@@ -24,7 +25,9 @@ public:
   Entity *GetParent();
 };
 
-class Entity {
+class Entity 
+{
+
 protected:
   bool visible_;
   std::string name_;
@@ -37,7 +40,7 @@ protected:
 
 public:
   phys::RGBAInt32 colour;
-  Entity();
+  Entity(phys::RGBAInt32 colour);
   ~Entity();
 
   const glm::vec3 GetScale() const;
@@ -57,6 +60,7 @@ public:
   void SetVisibility(const bool b);
   void SetName(std::string const &name);
 
+
   virtual void Update(const double delta);
   virtual void Render();
 
@@ -65,11 +69,14 @@ public:
   const std::vector<std::unique_ptr<Component>> *GetComponents() const;
   std::vector<Component *> GetComponents(std::string const &name) const;
 
-  template <typename T> T *const getComponent() {
-    for (std::vector<Component *>::iterator it = components_.begin(); it != components_.end(); ++it) {
+  template <typename T> T *const getComponent() 
+  {
+    for (std::vector<Component *>::iterator it = components_.begin(); it != components_.end(); ++it) 
+	{
       // printf("Checking %s against %s \n", typeid(**it).name(),
       // typeid(T).name());
-      if (&typeid(**it) == &typeid(T)) {
+      if (&typeid(**it) == &typeid(T)) 
+	  {
         return static_cast<T *>(*it);
       }
     }
@@ -77,7 +84,8 @@ public:
   }
 };
 
-class cShapeRenderer : public Component {
+class cShapeRenderer : public Component 
+{
 public:
   cShapeRenderer();
   ~cShapeRenderer();
@@ -85,4 +93,5 @@ public:
   void Render();
 
 private:
+
 };

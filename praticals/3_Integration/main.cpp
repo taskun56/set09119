@@ -57,7 +57,7 @@ bool load_content() {
 
 bool render() {
   for (size_t i = 0; i < balls.size(); i++) {
-    phys::DrawSphere(balls[i].position, 1.0f, RED);
+    phys::DrawSphere(balls[i].position, 1.0f, BLUE);
   }
 
   phys::DrawScene();

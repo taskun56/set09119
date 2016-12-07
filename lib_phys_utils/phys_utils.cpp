@@ -15,7 +15,8 @@ glm::mat4 PV;
 directional_light light;
 material mat;
 
-void Init() {
+void Init() 
+{
 
   effB = effect();
   effB.add_shader("shaders/phys_basic.vert", GL_VERTEX_SHADER);
@@ -47,7 +48,8 @@ void Update(double delta_time) {
 }
 
 const glm::vec3 UP(0, 1.0f, 0);
-void DrawArrow(const glm::vec3 &p0, const glm::vec3 &p1, const double thickness, const RGBAInt32 col) {
+void DrawArrow(const glm::vec3 &p0, const glm::vec3 &p1, const double thickness, const RGBAInt32 col) 
+{
   static geometry tube = geometry_builder::create_cylinder();
   static geometry cone = geometry_builder::create_pyramid();
   const auto line = p1 - p0;
@@ -126,6 +128,21 @@ void DrawSphere(const glm::vec3 &p0, float radius, const RGBAInt32 col) {
   renderer::bind(mat, "mat");
   renderer::bind(light, "light");
   glUniformMatrix4fv(effP.get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(MVP));
+  glUniformMatrix4fv(effP.get_uniform_location("M"), 1, GL_FALSE, value_ptr(M));
+  glUniformMatrix3fv(effP.get_uniform_location("N"), 1, GL_FALSE, value_ptr(N));
+  renderer::render(geom);
+}
+
+void DrawSphere(const glm::mat4 & m, const RGBAInt32 col)
+{
+  static geometry geom = geometry_builder::create_sphere();
+  renderer::bind(effP);
+  auto M = m;
+  mat3 N(1.0f);
+  mat.set_diffuse(col.tovec4());
+  renderer::bind(mat, "mat");
+  renderer::bind(light, "light");
+  glUniformMatrix4fv(effP.get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(PV * M));
   glUniformMatrix4fv(effP.get_uniform_location("M"), 1, GL_FALSE, value_ptr(M));
   glUniformMatrix3fv(effP.get_uniform_location("N"), 1, GL_FALSE, value_ptr(N));
   renderer::render(geom);
