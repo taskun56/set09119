@@ -13,7 +13,8 @@ bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cSphereCollider &c1
   const dvec3 d = p2 - p1;
   const double distance = glm::length(d);
   const double sumRadius = c1.radius + c2.radius;
-  if (distance < sumRadius) {
+  if (distance < sumRadius) 
+  {
     auto depth = sumRadius - distance;
     auto norm = -glm::normalize(d);
     auto pos = p1 - norm * (c1.radius - depth * 0.5f);
@@ -23,7 +24,7 @@ bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cSphereCollider &c1
   return false;
 }
 
-bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cSphereCollider &s, const cPlaneCollider &p) {
+bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cSphereCollider &s, const cPlaneCollider &p) { // TODO HERE DETECT
   const dvec3 sp = s.GetParent()->GetPosition();
   const dvec3 pp = p.GetParent()->GetPosition();
 
@@ -32,6 +33,8 @@ bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cSphereCollider &s,
 
   // Calculate the distance: dot product of the new vector with the plane's normal
   double distance = dot(vecTemp, p.normal);
+
+  cout << distance;
 
   if (distance <= s.radius) 
   {

@@ -146,7 +146,12 @@ void cShapeRenderer::Render() {
     phys::DrawCube(m, col_);
     break;
   default:
-    phys::DrawSphere(Ent_->GetPosition(), 1.0f, col_);
+    //phys::DrawSphere(Ent_->GetPosition(), 1.0f, col_); // TODO this is drawing a sphere at 0,0,0 where the plane is because the plane is not recognized as a renderable object
     break;
   }
 }
+
+
+// TODO - floor does not move by gravity, good
+// need to rotate the plane and test the angle of reflection when the ball hits.
+// then i need to make the ball "slide" down a plane it is already in contact with
