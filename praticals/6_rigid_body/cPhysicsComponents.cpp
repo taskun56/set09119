@@ -56,12 +56,15 @@ void cParticle::Integrate(const double dt)
 	if (GetParent()->GetName() != "Plane")
 	{
 		// calculate velocity from current and previous position
-		dvec3 velocity = position - prev_position;
+
+		velocity = position - prev_position;
 		// set previous position to current position
 		prev_position = position;
 		// position += v + a * (dt^2)
+		//position += (velocity * dt) + (GetGravity() * pow(dt, 2) * 0.5);
 		position += velocity + ((forces + GetGravity()) * inversemass) * pow(dt, 2);
 		forces = dvec3(0);
+		velocity = vec3(0);
 		GetParent()->SetPosition(position);
 	}
 }

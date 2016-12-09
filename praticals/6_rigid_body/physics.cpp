@@ -8,7 +8,7 @@ using namespace glm;
 static vector<cParticle *> physicsScene;
 static vector<cCollider *> colliders;
 
-static dvec3 gravity = dvec3(0, -9.8, 0);
+static dvec3 gravity = dvec3(0, -15.8, 0);
 const double coef = 0.5;
 const double rigidcoef = 0.0;
 
@@ -41,8 +41,14 @@ void ResolveP(cParticle *const b, const collisionInfo &ci, bool which)
 {
 	const double w = (which ? -1.0 : 1.0);
 	b->position += (w * ci.normal) * (ci.depth * 0.5);
-	const double currentSpeed = glm::length(b->position - b->prev_position);		// something in these lines here are casuing all linear force to be applied as upward motion instead of resolving independantly
-	b->prev_position = b->position + dvec3((-w * ci.normal) * currentSpeed * coef); // appears to be the planes normal as a calculation for resolution. this is the cause of the upward velocity on any collision with linear force added.
+	const double currentSpeed = glm::length(b->position - b->prev_position);		
+	b->prev_position = b->position + dvec3((-w * ci.normal) * currentSpeed * coef); 
+	// The above line needs to be changed. Currently "bounces" the ball in the direction of the plane's normal on collision.
+	// Needs to be changed to bounce the ball on the mirror angle to the angle of reflection from the plane's normal
+	// e.g. if the ball hits a plane with  anormal of 1 (90 degrees), at an angle of 45 degrees the initial angle of deflection should be 45 degrees to the normal of the plane
+	// Gravity will round out the parabola of the curve
+
+
 }
 
 void Resolve(const collisionInfo &ci)

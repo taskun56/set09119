@@ -11,6 +11,7 @@ public:
 	double mass;
 	double inversemass;
 	double linearDamping;
+	glm::dvec3 velocity;
 	//
 	cParticle(const std::string &tag = "Particle");
 	~cParticle();

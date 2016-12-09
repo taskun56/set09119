@@ -15,6 +15,7 @@ using namespace glm;
 static vector<unique_ptr<Entity>> SceneList;
 static unique_ptr<Entity> floorEnt;
 static cParticle* ballP = NULL;
+static bool norms = false;
 
 unique_ptr<Entity> CreateParticle()
 {
@@ -66,14 +67,17 @@ bool update(double delta_time)
 	static double accumulator = 0.0;
 	accumulator += delta_time;
 
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_W))
-	{
-		ballP->AddLinearForce(vec3(50.0f, 0.0f, 0.0f));
-	}
+	// Ball "movment" controls. Add impulse in the given axis
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_W))		{ ballP->AddLinearForce(vec3(-20.0f, 0.0f, 0.0f));	}
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_S))		{ ballP->AddLinearForce(vec3(20.0f, 0.0f, 0.0f));	}
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_A))		{ ballP->AddLinearForce(vec3(0.0f, 0.0f, 20.0f));	}
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_D))		{ ballP->AddLinearForce(vec3(0.0f, 0.0f, -20.0f));	}
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_SPACE))	{ ballP->AddLinearForce(vec3(0.0f, 20.0f, 0.0f));	}
 
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_SPACE))
+	// Toggle normals for all "plane" objects
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_BACKSPACE))
 	{
-		ballP->AddLinearForce(vec3(0.0f, 10.0f, 0.0f));
+		(norms == true ? norms = false : norms = true);
 	}
 
 	while (accumulator > physics_tick)
@@ -94,7 +98,7 @@ bool update(double delta_time)
 	return true;
 }
 
-bool load_content() 
+bool load_content()
 {
 	phys::Init();
 	SceneList.push_back(move(CreateParticle()));
@@ -105,17 +109,43 @@ bool load_content()
 	return true;
 }
 
+void renderAxis()
+{
+	// TODO add arrows on the end - unnecessary inclusion for later
+	phys::DrawLine(vec3(0.0f, 15.0f, 0.0f), vec3(5.0f, 15.0f, 0.0f), true, RED);	// X AXIS
+	phys::DrawLine(vec3(0.0f, 15.0f, 0.0f), vec3(0.0f, 20.0f, 0.0f), true, GREEN);	// Y AXIS
+	phys::DrawLine(vec3(0.0f, 15.0f, 0.0f), vec3(0.0f, 15.0f, 5.0f), true, BLUE);	// Z AXIS
+}
+
 bool render()
 {
-	for (auto &e : SceneList) 
+	for (auto &e : SceneList)
 	{
 		e->Render();
 	}
 	phys::DrawScene();
+	if (norms == true)
+	{
+		for (auto &e : SceneList)
+		{
+			if (e->GetName() == "Plane")
+			{
+				vec3 normal = e->getCompatibleComponent<cPlaneCollider>()->normal;
+				vec3 wp = e->getCompatibleComponent<cPlaneCollider>()->GetParent()->GetPosition();
+				vec3 temp_lp = wp + (normal * vec3(10));
+				phys::DrawLine(wp, temp_lp, 30, RED);
+				//e->getCompatibleComponent<cPlaneCollider>()->GetParent()->
+			}
+		}
+	}
+
+	// Render visual axis indicator
+	renderAxis();
+
 	return true;
 }
 
-void main() 
+void main()
 {
 	// Create application
 	app application;
@@ -126,3 +156,4 @@ void main()
 	// Run application
 	application.run();
 }
+
