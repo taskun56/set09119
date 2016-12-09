@@ -19,6 +19,17 @@ cParticle::~cParticle()
 	}
 }
 
+void cParticle::SetMass(double m)
+{
+	mass = m;
+	inversemass = 1 / mass;
+}
+
+double cParticle::getMass()
+{
+	return mass;
+}
+
 void cParticle::Update(double delta) {}
 
 void cParticle::SetParent(Entity *p)
@@ -44,17 +55,25 @@ void cParticle::Integrate(const double dt)
 {
 	if (GetParent()->GetName() != "Plane")
 	{
-		// calcualte velocity from current and previous position
+		// calculate velocity from current and previous position
 		dvec3 velocity = position - prev_position;
 		// set previous position to current position
 		prev_position = position;
 		// position += v + a * (dt^2)
 		position += velocity + ((forces + GetGravity()) * inversemass) * pow(dt, 2);
-
 		forces = dvec3(0);
 		GetParent()->SetPosition(position);
 	}
 }
+
+//vec3 cParticle::calculateForces()
+//{
+//	vec3 final_force(0);
+//
+//
+//
+//	return final_force;
+//}
 
 //----------------------
 cRigidBody::cRigidBody() : angularDamping(0.9), orientation(normalize(dquat())), cParticle("RididBody")
@@ -66,7 +85,8 @@ cRigidBody::~cRigidBody() {}
 
 void cRigidBody::Update(double delta) {}
 
-void cRigidBody::AddForceAt(const glm::dvec3 &force, const glm::dvec3 &point) {
+void cRigidBody::AddForceAt(const glm::dvec3 &force, const glm::dvec3 &point)
+{
 	// Add the force and torque
 	forces += force;
 	torques += cross(point - position, force);
@@ -77,12 +97,14 @@ void cRigidBody::AddAngularForce(const glm::dvec3 &i)
 	torques += i;
 }
 
-void cRigidBody::ComputeLocalInvInertiaTensor() {
+void cRigidBody::ComputeLocalInvInertiaTensor()
+{
 	localInvInertia = inverse(dmat3(1.0));
 	worldInvInertia = mat4_cast(orientation) * dmat4(localInvInertia) * transpose(mat4_cast(orientation));
 }
 
-void cRigidBody::Integrate(const double dt) {
+void cRigidBody::Integrate(const double dt)
+{
 	// recycle linear stuff
 	cParticle::Integrate(dt);
 
@@ -96,12 +118,14 @@ void cRigidBody::Integrate(const double dt) {
 	GetParent()->SetRotation(orientation);
 }
 
-void cRigidBody::SetParent(Entity *p) {
+void cRigidBody::SetParent(Entity *p)
+{
 	cParticle::SetParent(p);
 	orientation = Ent_->GetRotation();
 }
 
-void cRigidSphere::ComputeLocalInvInertiaTensor() {
+void cRigidSphere::ComputeLocalInvInertiaTensor()
+{
 	if (inversemass == 0)
 	{
 		localInvInertia = dmat3(0.0);
@@ -111,7 +135,6 @@ void cRigidSphere::ComputeLocalInvInertiaTensor() {
 
 	const double x2 = 4.0 * (radius * radius);
 	const double ix = (x2 + x2) / (inversemass * 12.0);
-
 	const double f = (1.0 / inversemass) * radius * radius * (2.0 / 5.0);
 	dmat3 localInvInertia = dmat3(0.0);
 	localInvInertia[0][0] = f;
@@ -128,7 +151,8 @@ void cRigidPlane::ComputeLocalInvInertiaTensor()
 
 void cRigidCube::ComputeLocalInvInertiaTensor()
 {
-	if (inversemass == 0) {
+	if (inversemass == 0)
+	{
 		localInvInertia = dmat3(0.0);
 		worldInvInertia = localInvInertia;
 		return;
@@ -149,9 +173,11 @@ cCollider::cCollider(const std::string &tag) : Component(tag)
 	GetColliders().push_back(this);
 }
 
-cCollider::~cCollider() {
+cCollider::~cCollider()
+{
 	auto position = std::find(GetColliders().begin(), GetColliders().end(), this);
-	if (position != GetColliders().end()) {
+	if (position != GetColliders().end())
+	{
 		GetColliders().erase(position);
 	}
 }

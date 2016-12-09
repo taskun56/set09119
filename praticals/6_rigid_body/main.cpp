@@ -14,12 +14,15 @@ using namespace glm;
 
 static vector<unique_ptr<Entity>> SceneList;
 static unique_ptr<Entity> floorEnt;
+static cParticle* ballP = NULL;
 
 unique_ptr<Entity> CreateParticle()
 {
 	unique_ptr<Entity> ent(new Entity());
-	ent->SetPosition(vec3(-2.0, 5.0 + (double)(rand() % 200) / 20.0, 2.0));
-	unique_ptr<Component> physComponent(new cParticle());
+	ent->SetPosition(vec3(-2.0, 5.0 + (double)(rand() % 200) / 5.0, 2.0));
+	ballP = new cParticle();
+	unique_ptr<Component> physComponent(ballP);
+	//unique_ptr<Component> physComponent(new cParticle());
 	unique_ptr<cShapeRenderer> renderComponent(new cShapeRenderer(cShapeRenderer::SPHERE));
 	renderComponent->SetColour(phys::RandomColour());
 	ent->AddComponent(physComponent);
@@ -65,19 +68,12 @@ bool update(double delta_time)
 
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_W))
 	{
-
+		ballP->AddLinearForce(vec3(50.0f, 0.0f, 0.0f));
 	}
 
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_SPACE))
 	{
-		for (auto &e : SceneList) 
-		{
-			auto b = e->getComponent<cRigidCube>();
-			if (b != NULL) 
-			{
-				b->AddAngularForce({ 0, 0, 5.0 });
-			}
-		}
+		ballP->AddLinearForce(vec3(0.0f, 10.0f, 0.0f));
 	}
 
 	while (accumulator > physics_tick)
