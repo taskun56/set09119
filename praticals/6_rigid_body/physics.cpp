@@ -22,13 +22,13 @@ void ResolveRB(cRigidBody *const b, const collisionInfo &ci, bool which)
 	dvec3 v0 = dv + cross(b->angVelocity, r0);
 
 	// I've butchered this formula pretty bad.
-	double j = -1.0 * (rigidcoef)+dot(dv, ci.normal) / (dot(ci.normal, ci.normal) * (b->inversemass * 2.0) + dot(ci.normal, (cross(r0, ci.normal))));
+	double j = -1.0 * (rigidcoef)+dot(dv, ci.normal) / (dot(ci.normal, ci.normal) * (b->getInverseMass() * 2.0) + dot(ci.normal, (cross(r0, ci.normal))));
 
 	// stop sinking
 	j = j - (ci.depth * 0.1);
 
 	// linear impulse
-	dvec3 newVel = dv + (b->inversemass * ci.normal * j);
+	dvec3 newVel = dv + (b->getInverseMass() * ci.normal * j);
 	b->AddLinearImpulse(-newVel);
 
 
@@ -106,7 +106,7 @@ void UpdatePhysics(const double t, const double dt) {
 	}
 	// Integrate
 	for (auto &e : physicsScene) {
-		e->Integrate(dt);
+		e->Integrate(t, dt);
 	}
 }
 

@@ -16,6 +16,10 @@ static vector<unique_ptr<Entity>> SceneList;
 static unique_ptr<Entity> floorEnt;
 static cParticle* ballP = NULL;
 static bool norms = false;
+double xpos1;
+double ypos1;
+double cursor_x;
+double cursor_y;
 
 unique_ptr<Entity> CreateParticle()
 {
@@ -63,9 +67,32 @@ unique_ptr<Entity> CreatePlane()
 
 bool update(double delta_time)
 {
+	ballP->AddLinearForce(dvec3(0.0, -15.0, 0.0));
 	static double t = 0.0;
 	static double accumulator = 0.0;
 	accumulator += delta_time;
+
+	// screen space ratio
+	static double ratio_width = quarter_pi<float>() / static_cast<float>(renderer::get_screen_width());
+	static double ratio_height = (quarter_pi<float>() * (static_cast<float>(renderer::get_screen_height()) / static_cast<float>(renderer::get_screen_width()))) / static_cast<float>(renderer::get_screen_height());
+
+	double current_x = 0;
+	double current_y = 0;
+
+	// get cursor position
+	glfwGetCursorPos(renderer::get_window(), &current_x, &current_y);
+
+	// calculate delta of cursor positions from last frame
+	double delta_x = current_x - xpos1;
+	double delta_y = current_y - ypos1;
+
+	// multiply deltas by tratios gets the actual change in orientation on screen space
+	delta_x *= ratio_width;
+	delta_y *= ratio_height;
+
+	cout << "\r" <<  current_x << "   " << current_y << "   " << delta_x << "   " << delta_y << std::flush;
+
+	phys::getCamera().rotate(delta_x, -delta_y);
 
 	// Ball "movment" controls. Add impulse in the given axis
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_W))		{ ballP->AddLinearForce(vec3(-20.0f, 0.0f, 0.0f));	}
@@ -73,6 +100,14 @@ bool update(double delta_time)
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_A))		{ ballP->AddLinearForce(vec3(0.0f, 0.0f, 20.0f));	}
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_D))		{ ballP->AddLinearForce(vec3(0.0f, 0.0f, -20.0f));	}
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_SPACE))	{ ballP->AddLinearForce(vec3(0.0f, 20.0f, 0.0f));	}
+	
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_I)) { phys::SetCameraPos(phys::getCamPosition() += (dvec3(0.0f, 0.0f, -5.0f) * (delta_time * 10.0f))); }
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_J)) { phys::SetCameraPos(phys::getCamPosition() += (dvec3(-5.0f, 0.0f, 0.0f) * (delta_time * 10.0f))); }
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_K)) { phys::SetCameraPos(phys::getCamPosition() += (dvec3(0.0f, 0.0f, 5.0f) * (delta_time * 10.0f))); }
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_L)) { phys::SetCameraPos(phys::getCamPosition() += (dvec3(5.0f, 0.0f, 0.0f) * (delta_time * 10.0f))); }
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_RIGHT_ALT)) { phys::SetCameraPos(phys::getCamPosition() += (dvec3(0.0f, -5.0f, 0.0f) * (delta_time * 10.0f))); }
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_RIGHT_CONTROL)) { phys::SetCameraPos(phys::getCamPosition() += (dvec3(0.0f, 5.0f, 0.0f) * (delta_time * 10.0f))); }
+
 
 	// Toggle normals for all "plane" objects
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_BACKSPACE))
@@ -93,18 +128,25 @@ bool update(double delta_time)
 	}
 
 	phys::Update(delta_time);
-	cout << endl << endl << endl << SceneList.at(0)->GetPosition().y << endl;
-	cout << SceneList.at(0)->GetName() << endl;
+	phys::getCamera().update(delta_time);
+	xpos1 = current_x;
+	ypos1 = current_y;
+	//cout << endl << endl << endl << SceneList.at(0)->GetPosition().y << endl;
+	//cout << SceneList.at(0)->GetName() << endl;
 	return true;
 }
 
 bool load_content()
 {
 	phys::Init();
+	glfwSetInputMode(renderer::get_window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwGetCursorPos(renderer::get_window(), &xpos1, &ypos1);
 	SceneList.push_back(move(CreateParticle()));
 	SceneList.push_back(CreatePlane());
 	phys::SetCameraPos(vec3(20.0f, 10.0f, 20.0f));
 	phys::SetCameraTarget(vec3(0, 10.0f, 0));
+	auto aspect = static_cast<float>(renderer::get_screen_width()) / static_cast<float>(renderer::get_screen_height());
+	phys::getCamera().set_projection(quarter_pi<float>(), aspect , 2.414f, 1000.0f);
 	InitPhysics();
 	return true;
 }
@@ -133,7 +175,7 @@ bool render()
 				vec3 normal = e->getCompatibleComponent<cPlaneCollider>()->normal;
 				vec3 wp = e->getCompatibleComponent<cPlaneCollider>()->GetParent()->GetPosition();
 				vec3 temp_lp = wp + (normal * vec3(10));
-				phys::DrawLine(wp, temp_lp, 30, RED);
+				phys::DrawLine(wp, temp_lp, true, RED);
 				//e->getCompatibleComponent<cPlaneCollider>()->GetParent()->
 			}
 		}

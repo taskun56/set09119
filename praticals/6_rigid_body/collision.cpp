@@ -34,13 +34,13 @@ bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cSphereCollider &s,
   // Calculate the distance: dot product of the new vector with the plane's normal
   double distance = dot(vecTemp, p.normal);
 
-  cout << distance;
+  //cout << distance;
 
   if (distance <= s.radius) 
   {
 	  // create the collision here
     civ.push_back({&s, &p, sp - p.normal * distance, p.normal, s.radius - distance});
-	cout << "Sphere plane collision detected" << endl;
+	//cout << "Sphere plane collision detected" << endl;
     return true;
   }
 
@@ -52,7 +52,7 @@ bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cSphereCollider &c1
   const dvec3 bp = c2.GetParent()->GetPosition();
   if (length(sp - bp) < c1.radius + c2.radius) {
     // TODO
-    cout << "Sphere Box" << endl;
+    //cout << "Sphere Box" << endl;
     // return true;
   }
 
@@ -61,7 +61,7 @@ bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cSphereCollider &c1
 
 bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cPlaneCollider &c1, const cPlaneCollider &c2) {
   // TODO
-  cout << "PLANE PLANE" << endl;
+  //cout << "PLANE PLANE" << endl;
   return false;
 }
 
@@ -92,7 +92,7 @@ bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cPlaneCollider &p, 
 
     if (distances[i] > 0)
 	{
-      cout << "CuboidPlane!\n";
+      //cout << "CuboidPlane!\n";
       civ.push_back({&p, &b, points[i] + planeNormal * distances[i], planeNormal, distances[i]});
       isCollided = true;
 
@@ -103,7 +103,7 @@ bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cPlaneCollider &p, 
 
 bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cBoxCollider &c1, const cBoxCollider &c2) {
   //TODO:
-  cout << "Box Box" << endl;
+  //cout << "Box Box" << endl;
   return false;
 }
 
@@ -145,7 +145,7 @@ bool IsColliding(std::vector<collisionInfo> &civ, const cCollider &c1, const cCo
     } 
 	else if (s2 == SPHERE) 
 	{
-		cout << "Sphere plane collision detected" << endl; // does detect
+		//cout << "Sphere plane collision detected" << endl; // does detect
       return IsCollidingCheck(civ, dynamic_cast<const cSphereCollider &>(c1), dynamic_cast<const cPlaneCollider &>(c2));
     } 
 	else if (s2 == BOX) 

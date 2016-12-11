@@ -1,6 +1,6 @@
 #pragma once
 #include "game.h"
-
+struct Derivative;
 class cParticle : public Component
 {
 public:
@@ -18,11 +18,13 @@ public:
 	void SetMass(double m);
 	double getMass();
 	void Update(double delta);
+	double getInverseMass();
 	//vec3 calculateForces();
 	virtual void SetParent(Entity *p);
 	virtual void AddLinearForce(const glm::dvec3 &i);
 	virtual void AddLinearImpulse(const glm::dvec3 &i);
-	virtual void Integrate(const double dt);
+	Derivative compute(const double t, const double dt, const Derivative & d);
+	virtual void Integrate(const double t, const double dt);
 
 private:
 };
@@ -44,7 +46,7 @@ public:
 	void AddForceAt(const glm::dvec3 &force, const glm::dvec3 &point);
 	void AddAngularForce(const glm::dvec3 &i);
 	virtual void ComputeLocalInvInertiaTensor();
-	void Integrate(const double dt);
+	void Integrate(const double t, const double dt);
 	void SetParent(Entity *p);
 
 private:

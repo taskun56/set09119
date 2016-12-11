@@ -5,6 +5,10 @@
 using namespace std;
 using namespace glm;
 
+struct Derivative {
+	dvec3 dx, dv;
+};
+
 //----------------------
 cParticle::cParticle(const string &tag) : mass(1.0), inversemass(1.0), linearDamping(1.0), Component(tag)
 {
@@ -14,7 +18,8 @@ cParticle::cParticle(const string &tag) : mass(1.0), inversemass(1.0), linearDam
 cParticle::~cParticle()
 {
 	auto position = std::find(GetPhysicsScene().begin(), GetPhysicsScene().end(), this);
-	if (position != GetPhysicsScene().end()) {
+	if (position != GetPhysicsScene().end())
+	{
 		GetPhysicsScene().erase(position);
 	}
 }
@@ -44,6 +49,11 @@ void cParticle::AddLinearForce(const glm::dvec3 &i)
 	forces += i;
 }
 
+double cParticle::getInverseMass()
+{
+	return inversemass;
+}
+
 void cParticle::AddLinearImpulse(const glm::dvec3 &v)
 {
 	const dvec3 dv = position - prev_position;
@@ -51,8 +61,39 @@ void cParticle::AddLinearImpulse(const glm::dvec3 &v)
 	prev_position = position - newdv;
 }
 
-void cParticle::Integrate(const double dt)
+Derivative cParticle::compute(const double t, const double dt, const Derivative &d) 
 {
+	//where would we be and how fast at dt 
+	dvec3 x = position + d.dx * dt;
+	dvec3 v = velocity + d.dv * dt;
+
+	Derivative output;
+	output.dx = v;
+	//what would the acceleration be at this point?
+	// *********************************
+	output.dv = dvec3(0.0, -15.0, 0.0);
+	// *********************************
+	return output;
+}
+
+void cParticle::Integrate(const double t, const double dt)
+{
+	//if (GetParent()->GetName() != "Plane")
+	//{
+	//	Derivative a, b, c, d;
+
+	//	//Incrementally compute for various dt
+	//	a = compute(t, 0.0f, Derivative{ dvec3(0), dvec3(0) });
+	//	b = compute(t, dt * 0.5f, a);
+	//	c = compute(t, dt * 0.5f, b);
+	//	d = compute(t, dt, c);
+
+	//	//compute the final derivitive
+	//	// *********************************
+	//	velocity += (a.dv + 2.0 * b.dv + 2.0 * c.dv + d.dv) * dt / 6.0;
+	//	position += (a.dx + 2.0 * b.dx + 2.0 * c.dx + d.dx) * dt / 6.0;
+	//}
+
 	if (GetParent()->GetName() != "Plane")
 	{
 		// calculate velocity from current and previous position
@@ -61,25 +102,18 @@ void cParticle::Integrate(const double dt)
 		// set previous position to current position
 		prev_position = position;
 		// position += v + a * (dt^2)
-		//position += (velocity * dt) + (GetGravity() * pow(dt, 2) * 0.5);
-		position += velocity + ((forces + GetGravity()) * inversemass) * pow(dt, 2);
+		//position += (velocity * dt) + (GetGravity() * pow(dt, 2) * 0.5); // mine, nope
+		position += velocity + ((forces + GetGravity() /* final A */) * getInverseMass()) * pow(dt, 2);
+		//cout << forces.x << forces.y << forces.z << flush;
 		forces = dvec3(0);
 		velocity = vec3(0);
 		GetParent()->SetPosition(position);
+		
 	}
 }
 
-//vec3 cParticle::calculateForces()
-//{
-//	vec3 final_force(0);
-//
-//
-//
-//	return final_force;
-//}
-
 //----------------------
-cRigidBody::cRigidBody() : angularDamping(0.9), orientation(normalize(dquat())), cParticle("RididBody")
+cRigidBody::cRigidBody() : angularDamping(0.9), orientation(normalize(dquat())), cParticle("RigidBody")
 {
 	ComputeLocalInvInertiaTensor();
 }
@@ -106,13 +140,13 @@ void cRigidBody::ComputeLocalInvInertiaTensor()
 	worldInvInertia = mat4_cast(orientation) * dmat4(localInvInertia) * transpose(mat4_cast(orientation));
 }
 
-void cRigidBody::Integrate(const double dt)
+void cRigidBody::Integrate(const double t, const double dt)
 {
 	// recycle linear stuff
-	cParticle::Integrate(dt);
+	cParticle::Integrate(t, dt);
 
 	angVelocity += worldInvInertia * torques * dt;
-	angVelocity *= min(pow(angularDamping, dt), 1.0);
+	angVelocity *= glm::min(pow(angularDamping, dt), 1.0);
 
 	orientation += dquat(angVelocity * dt) * orientation;
 	orientation = normalize(orientation);

@@ -8,7 +8,7 @@ using namespace glm;
 
 namespace phys
 {
-	target_camera cam;
+	free_camera cam;
 	effect effP;
 	effect effB;
 	effect effG;
@@ -46,6 +46,16 @@ namespace phys
 		PV = cam.get_projection() * cam.get_view();
 		cam.update(static_cast<float>(delta_time));
 		renderer::setClearColour(0, 0, 0);
+	}
+
+	glm::vec3 getCamPosition()
+	{
+		return cam.get_position();
+	}
+
+	graphics_framework::free_camera getCamera()
+	{
+		return cam;
 	}
 
 	const glm::vec3 UP(0, 1.0f, 0);

@@ -1,6 +1,7 @@
 #pragma once
 #include <glm\glm.hpp>
 #include <iostream>
+#include <graphics_framework.h>
 #define RED                                                                                                            \
   { 4278190335 }
 #define GREEN                                                                                                          \
@@ -48,6 +49,8 @@ void DrawSphere(const glm::vec3 &p0, float radius = 1.0f, const RGBAInt32 col = 
 void DrawSphere(const glm::mat4 &m, const RGBAInt32 col = RED);
 void DrawCube(const glm::vec3 &p0, const glm::vec3 &scale = glm::vec3(1.0f, 1.0f, 1.0f), const RGBAInt32 col = RED);
 void DrawCube(const glm::mat4 &m, const RGBAInt32 col = RED);
+glm::vec3 getCamPosition();
+graphics_framework::free_camera getCamera();
 }
 
 glm::vec3 projectOntoPlane(const glm::vec3 &point, const glm::vec3 &planeNormal,
