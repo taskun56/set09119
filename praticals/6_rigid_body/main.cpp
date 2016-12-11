@@ -57,12 +57,120 @@ unique_ptr<Entity> CreatePlane()
 	ent->SetPosition(vec3(0.0f, 0.0f, 0.0f));
 	unique_ptr<Component> physComponent(new cRigidPlane());
 	unique_ptr<cShapeRenderer> renderComponent(new cShapeRenderer(cShapeRenderer::PLANE));
-	renderComponent->SetColour(phys::RandomColour());
+	renderComponent->SetColour(RED); // setting pink, everytime... so much for random
 	ent->AddComponent(physComponent);
 	ent->AddComponent(unique_ptr<Component>(new cPlaneCollider()));
 	ent->AddComponent(unique_ptr<Component>(move(renderComponent)));
 	ent->SetName("Plane");
 	return ent;
+}
+
+void createGraphics()
+{
+	//// TOP RAIL
+	//geometry ramp_t_base;				// base of top ramp
+	//ramp_t_base.set_type(GL_QUADS);
+	//
+	//vector<vec3> rtb_positions
+	//{
+	//	// vec3 world space positions for the top ramp base quad
+	//};
+
+	//geometry ramp_t_rail_l;				// left rail of top ramp
+	//vector<vec3> rtl_positions
+	//{
+	//	// vec3 world space positions for the top ramp base quad
+	//};
+
+	//geometry ramp_t_rail_r;				// right rail of top ramp
+	//vector<vec3> rtr_positions
+	//{
+	//	// vec3 world space positions for the top ramp base quad
+	//};
+
+
+
+
+
+	//// MIDDLE RAIL
+	//geometry ramp_m_base;				// base of top ramp
+	//ramp_m_base.set_type(GL_QUADS);
+
+	//vector<vec3> rmb_positions
+	//{
+	//	// vec3 world space positions for the top ramp base quad
+	//};
+
+	//geometry ramp_m_rail_l;				// left rail of top ramp
+	//vector<vec3> rml_positions
+	//{
+	//	// vec3 world space positions for the top ramp base quad
+	//};
+
+	//geometry ramp_m_rail_r;				// right rail of top ramp
+	//vector<vec3> rmr_positions
+	//{
+	//	// vec3 world space positions for the top ramp base quad
+	//};
+
+
+
+
+
+	// BOTTOM RAIL
+	geometry ramp_b_base;				// base of top ramp
+	ramp_b_base.set_type(GL_QUADS);
+
+	vector<vec3> rbb_positions
+	{
+		// vec3 world space positions for the top ramp base quad
+		vec3(-3.0f, 1.0f, 0.0f),	// TOP LEFT
+		vec3(-3.0f, 0.0f, 0.0f),	// BOTTOM LEFT
+		vec3(3.0f, -1.0f, 0.0f),	// BOTTOM RIGHT	
+		vec3(3.0f, 0.0f, 0.0f)		// TOP RIGHT
+	};
+
+	geometry ramp_b_rail_l;				// left rail of top ramp
+	vector<vec3> rbl_positions
+	{
+		// vec3 world space positions for the top ramp base quad
+		vec3(-3.0f, 0.0f, 0.0f),	// TOP LEFT
+		vec3(-3.0f, -1.0f, 0.0f),	// BOTTOM LEFT
+		vec3(3.0f, 0.0f, 0.0f),		// BOTTOM RIGHT	
+		vec3(3.0f, 1.0f, 0.0f)		// TOP RIGHT
+	};
+
+	geometry ramp_b_rail_r;				// right rail of top ramp
+	vector<vec3> rbr_positions
+	{
+		// vec3 world space positions for the top ramp base quad
+		// base quad is viewed from the top and its depth is measured on the Z axis instead of leftright/updown of the railings
+		vec3(-3.0f, 0.0f, 1.0f),	// TOP LEFT
+		vec3(-3.0f, 0.0f, -1.0f),	// BOTTOM LEFT
+		vec3(3.0f, 0.0f, -1.0f),	// BOTTOM RIGHT	
+		vec3(3.0f, 0.0f, 1.0f)		// TOP RIGHT
+	};
+
+
+
+
+
+	// UNIVERSAL COLOR VECTOR FOR ALL RAMP QUADS
+	vector<vec4> colors
+	{
+		vec4(1.0f, 0.0F, 0.0f, 1.0f),	// RED CORNER
+		vec4(0.0f, 1.0F, 0.0f, 1.0f),	// GREEN CORNER
+		vec4(0.0f, 0.0F, 1.0f, 1.0f),	// BLUE CORNER
+		vec4(1.0f, 1.0F, 0.0f, 1.0f)	// YELLOW CORNER
+	};
+
+	// Ramp bottom base buffer indexes for vector and color
+	ramp_b_base.add_buffer(rbb_positions, BUFFER_INDEXES::POSITION_BUFFER);
+	ramp_b_base.add_buffer(colors, BUFFER_INDEXES::COLOUR_BUFFER);
+
+
+	 // shader file path -> ..\\..\\..\\new\\res\\shaders
+
 }
 
 bool update(double delta_time)
@@ -86,13 +194,13 @@ bool update(double delta_time)
 	double delta_x = current_x - xpos1;
 	double delta_y = current_y - ypos1;
 
-	// multiply deltas by tratios gets the actual change in orientation on screen space
+	// multiply deltas by ratios gets the actual change in orientation on screen space
 	delta_x *= ratio_width;
 	delta_y *= ratio_height;
 
 	cout << "\r" <<  current_x << "   " << current_y << "   " << delta_x << "   " << delta_y << std::flush;
 
-	phys::getCamera().rotate(delta_x, -delta_y);
+	phys::getCamera().rotate((float)delta_x, (float)-delta_y);
 
 	// Ball "movment" controls. Add impulse in the given axis
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_W))		{ ballP->AddLinearForce(vec3(-20.0f, 0.0f, 0.0f));	}
@@ -128,7 +236,7 @@ bool update(double delta_time)
 	}
 
 	phys::Update(delta_time);
-	phys::getCamera().update(delta_time);
+	phys::getCamera().update((float)delta_time);
 	xpos1 = current_x;
 	ypos1 = current_y;
 	//cout << endl << endl << endl << SceneList.at(0)->GetPosition().y << endl;
@@ -165,7 +273,7 @@ bool render()
 	{
 		e->Render();
 	}
-	phys::DrawScene();
+	//phys::DrawScene();
 	if (norms == true)
 	{
 		for (auto &e : SceneList)
