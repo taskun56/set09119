@@ -53,9 +53,9 @@ namespace phys
 		return cam.get_position();
 	}
 
-	graphics_framework::free_camera getCamera()
+	graphics_framework::free_camera* getCamera()
 	{
-		return cam;
+		return &cam;
 	}
 
 	graphics_framework::directional_light getLight()
@@ -244,6 +244,11 @@ namespace phys
 	void SetCameraTarget(const glm::vec3 &p0)
 	{
 		cam.set_target(p0);
+		PV = cam.get_projection() * cam.get_view();
+	}
+
+	void CameraTarget()
+	{
 		PV = cam.get_projection() * cam.get_view();
 	}
 

@@ -18,8 +18,8 @@ static cParticle* ballP = NULL;
 static bool norms = false;
 double xpos1;
 double ypos1;
-double cursor_x;
-double cursor_y;
+static double cursor_x;
+static double cursor_y;
 geometry ramp_b_base;				// base of top ramp
 material mat;
 effect simple_eff;
@@ -53,7 +53,6 @@ unique_ptr<Entity> CreateBox(const vec3 &position)
 	ent->AddComponent(unique_ptr<Component>(move(renderComponent)));
 	return ent;
 }
-
 unique_ptr<Entity> CreatePlane()
 {
 	unique_ptr<Entity> ent(new Entity());
@@ -256,8 +255,12 @@ bool update(double delta_time)
 	delta_y *= ratio_height;
 
 	//cout << "\r" << current_x << "   " << current_y << "   " << delta_x << "   " << delta_y << std::flush;
+	if ((current_x != xpos1) || (current_y != ypos1))
+	{
+		phys::getCamera()->rotate((float)delta_x, (float)-delta_y);
+		phys::CameraTarget();
+	}
 
-	phys::getCamera().rotate((float)delta_x, (float)-delta_y);
 
 	// Ball "movment" controls. Add impulse in the given axis
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_W)) { ballP->AddLinearForce(vec3(0.0f, 0.0f, -20.0f)); }
@@ -266,12 +269,12 @@ bool update(double delta_time)
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_D)) { ballP->AddLinearForce(vec3(20.0f, 0.0f, 0.0f)); }
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_SPACE)) { ballP->AddLinearForce(vec3(0.0f, 20.0f, 0.0f)); }
 
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_I)) { phys::SetCameraPos(phys::getCamPosition() += (dvec3(0.0f, 0.0f, -5.0f) * (delta_time * 10.0f))); }
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_J)) { phys::SetCameraPos(phys::getCamPosition() += (dvec3(-5.0f, 0.0f, 0.0f) * (delta_time * 10.0f))); }
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_K)) { phys::SetCameraPos(phys::getCamPosition() += (dvec3(0.0f, 0.0f, 5.0f) * (delta_time * 10.0f))); }
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_L)) { phys::SetCameraPos(phys::getCamPosition() += (dvec3(5.0f, 0.0f, 0.0f) * (delta_time * 10.0f))); }
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_RIGHT_ALT)) { phys::SetCameraPos(phys::getCamPosition() += (dvec3(0.0f, -5.0f, 0.0f) * (delta_time * 10.0f))); }
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_RIGHT_CONTROL)) { phys::SetCameraPos(phys::getCamPosition() += (dvec3(0.0f, 5.0f, 0.0f) * (delta_time * 10.0f))); }
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_I)) { phys::getCamera()->move(vec3(0.0f, 0.0f, 1.0f)); };
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_J)) { phys::getCamera()->move(vec3(-1.0f, 0.0f, 0.0f)); }
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_K)) { phys::getCamera()->move(vec3(0.0f, 0.0f, -1.0f)); }
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_L)) { phys::getCamera()->move(vec3(1.0f, 0.0f, 0.0f)); }
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_RIGHT_ALT)) { phys::getCamera()->move(vec3(0.0f, -1.0f, 0.0f)); }
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_RIGHT_CONTROL)) { phys::getCamera()->move(vec3(0.0f, 1.0f, 0.0f)); }
 
 
 	// Toggle normals for all "plane" objects
@@ -293,25 +296,28 @@ bool update(double delta_time)
 	}
 
 	phys::Update(delta_time);
-	phys::getCamera().update((float)delta_time);
+	phys::getCamera()->update((float)delta_time);
 	xpos1 = current_x;
 	ypos1 = current_y;
 	//cout << endl << endl << endl << SceneList.at(0)->GetPosition().y << endl;
 	//cout << SceneList.at(0)->GetName() << endl;
+	cout << phys::getCamera()->get_pitch();
 	return true;
 }
 
 bool load_content()
 {
 	phys::Init();
+
 	glfwSetInputMode(renderer::get_window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwGetCursorPos(renderer::get_window(), &xpos1, &ypos1);
+
 	SceneList.push_back(move(CreateParticle()));
 	SceneList.push_back(CreatePlane());
 	phys::SetCameraPos(vec3(-10.0f, 10.0f, 40.0f));
 	phys::SetCameraTarget(vec3(-2.0f, 10.0f, 2.0f));
 	auto aspect = static_cast<float>(renderer::get_screen_width()) / static_cast<float>(renderer::get_screen_height());
-	phys::getCamera().set_projection(quarter_pi<float>(), aspect, 2.414f, 1000.0f);
+	phys::getCamera()->set_projection(quarter_pi<float>(), aspect, 2.414f, 1000.0f);
 	InitPhysics();
 	return true;
 }
