@@ -33,6 +33,7 @@ protected:
   glm::dvec3 position_;
   glm::dquat rotation_;
   glm::dmat4 transform_;
+  glm::vec3 normal_;
   std::vector<std::unique_ptr<Component>> components_;
 
 public:
@@ -44,15 +45,17 @@ public:
   const glm::dvec3 GetPosition() const;
   const glm::dvec3 GetRotationV3() const;
   const glm::dquat GetRotation() const;
-  const glm::dmat4 GetTranform();
+  const glm::dmat4 GetTransform();
   const bool IsVisible() const;
   const std::string GetName() const;
+  const glm::vec3 getNormal() const;
 
   void SetTransform(const glm::dmat4 m4);
   void SetScale(const glm::dvec3 &v3);
   void SetPosition(const glm::dvec3 &v3);
   void SetRotation(const glm::dvec3 &v3);
   void SetRotation(const glm::dquat &q);
+  void setNormal(const glm::vec3 &n);
 
   void SetVisibility(const bool b);
   void SetName(std::string const &name);
@@ -87,10 +90,10 @@ public:
 
 class cShapeRenderer : public Component {
 public:
-  enum SHAPES { SPHERE, BOX, /* I added this */ PLANE };
+  enum SHAPES { SPHERE, BOX, PLANE, RAMP };
   const SHAPES shape;
   void SetColour(const phys::RGBAInt32 c);
-  cShapeRenderer(SHAPES shape);
+  cShapeRenderer(SHAPES shape, phys::RGBAInt32 color);
   ~cShapeRenderer();
   void Update(double delta);
   void Render();

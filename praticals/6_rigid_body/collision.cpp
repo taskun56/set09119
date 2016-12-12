@@ -38,6 +38,12 @@ bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cSphereCollider &s,
 
   if (distance <= s.radius) 
   {
+	  dvec3 collisionPt = sp - p.normal * distance;
+	  // distance X axis < width = no collision (right vec)
+	  // distance Z axis < depth = no collision (forward vec)
+	  if (length(collisionPt - p.GetParent()->GetPosition()) > 3) {
+		  return false;
+	  }
 	  // create the collision here
     civ.push_back({&s, &p, sp - p.normal * distance, p.normal, s.radius - distance});
 	//cout << "Sphere plane collision detected" << endl;

@@ -39,7 +39,7 @@ const vec3 Entity::GetPosition() const { return position_; }
 const quat Entity::GetRotation() const { return rotation_; }
 const vec3 Entity::GetRotationV3() const { return glm::eulerAngles(GetRotation()); }
 
-const mat4 Entity::GetTranform() {
+const mat4 Entity::GetTransform() {
   if (changed_) {
     mat4 scl = scale(scale_);
     mat4 rot = mat4_cast(rotation_);

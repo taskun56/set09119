@@ -44,7 +44,7 @@ public:
   const glm::vec3 GetPosition() const;
   const glm::vec3 GetRotationV3() const;
   const glm::quat GetRotation() const;
-  const glm::mat4 GetTranform();
+  const glm::mat4 GetTransform();
   const bool IsVisible() const;
   const std::string GetName() const;
 

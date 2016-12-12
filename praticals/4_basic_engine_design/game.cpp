@@ -73,7 +73,7 @@ const vec3 Entity::GetRotationV3() const
 	return glm::eulerAngles(GetRotation()); 
 }
 
-const mat4 Entity::GetTranform()
+const mat4 Entity::GetTransform()
 {
   if (changed_) {
     mat4 scl = scale(scale_);

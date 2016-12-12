@@ -7,13 +7,13 @@
 #include <phys_utils.h>
 #include <thread>
 
+
 using namespace std;
 using namespace graphics_framework;
 using namespace glm;
 #define physics_tick 1.0 / 60.0
 
 static vector<unique_ptr<Entity>> SceneList;
-static unique_ptr<Entity> floorEnt;
 static cParticle* ballP = NULL;
 static bool norms = false;
 double xpos1;
@@ -31,7 +31,7 @@ unique_ptr<Entity> CreateParticle()
 	ballP = new cParticle();
 	unique_ptr<Component> physComponent(ballP);
 	//unique_ptr<Component> physComponent(new cParticle());
-	unique_ptr<cShapeRenderer> renderComponent(new cShapeRenderer(cShapeRenderer::SPHERE));
+	unique_ptr<cShapeRenderer> renderComponent(new cShapeRenderer(cShapeRenderer::SPHERE, phys::RandomColour()));
 	renderComponent->SetColour(phys::RandomColour());
 	ent->AddComponent(physComponent);
 	ent->SetName("BALL");
@@ -45,7 +45,7 @@ unique_ptr<Entity> CreateBox(const vec3 &position)
 	ent->SetPosition(position);
 	ent->SetRotation(angleAxis(-45.0f, vec3(1, 0, 0)));
 	unique_ptr<Component> physComponent(new cRigidCube());
-	unique_ptr<cShapeRenderer> renderComponent(new cShapeRenderer(cShapeRenderer::BOX));
+	unique_ptr<cShapeRenderer> renderComponent(new cShapeRenderer(cShapeRenderer::BOX, phys::RandomColour()));
 	renderComponent->SetColour(phys::RandomColour());
 	ent->AddComponent(physComponent);
 	ent->SetName("Cuby");
@@ -53,13 +53,26 @@ unique_ptr<Entity> CreateBox(const vec3 &position)
 	ent->AddComponent(unique_ptr<Component>(move(renderComponent)));
 	return ent;
 }
-unique_ptr<Entity> CreatePlane()
+unique_ptr<Entity> CreatePlane(vec3 pos)
 {
 	unique_ptr<Entity> ent(new Entity());
-	ent->SetPosition(vec3(0.0f, 0.0f, 0.0f));
+	ent->SetPosition(pos);
 	unique_ptr<Component> physComponent(new cRigidPlane());
-	unique_ptr<cShapeRenderer> renderComponent(new cShapeRenderer(cShapeRenderer::PLANE));
-	renderComponent->SetColour(RED); // setting pink, everytime... so much for random
+	unique_ptr<cShapeRenderer> renderComponent(new cShapeRenderer(cShapeRenderer::PLANE, phys::RandomColour()));
+	renderComponent->SetColour(phys::RandomColour());
+	ent->AddComponent(physComponent);
+	ent->AddComponent(unique_ptr<Component>(new cPlaneCollider()));
+	ent->AddComponent(unique_ptr<Component>(move(renderComponent)));
+	ent->SetName("Plane");
+	return ent;
+}
+unique_ptr<Entity> CreateRamp(vec3 pos)
+{
+	unique_ptr<Entity> ent(new Entity());
+	ent->SetPosition(pos);
+	unique_ptr<Component> physComponent(new cRigidPlane());
+	unique_ptr<cShapeRenderer> renderComponent(new cShapeRenderer(cShapeRenderer::RAMP, phys::RandomColour()));
+	renderComponent->SetColour(phys::RandomColour());
 	ent->AddComponent(physComponent);
 	ent->AddComponent(unique_ptr<Component>(new cPlaneCollider()));
 	ent->AddComponent(unique_ptr<Component>(move(renderComponent)));
@@ -86,15 +99,47 @@ void addNormals(geometry geom, vec3 normal, int vertices)
 
 void createGraphics()
 {
+	ramp_b_base.set_type(GL_QUADS);
 
-
-	vector<vec3> tex_coords
+	// Create quad data
+	// Positions
+	vector<vec3> positions
 	{
 		vec3(-1.0f, 1.0f, 0.0f),
 		vec3(-1.0f, -1.0f, 0.0f),
 		vec3(1.0f, -1.0f, 0.0f),
 		vec3(1.0f, 1.0f, 0.0f)
 	};
+	// Colours
+	vector<vec4> colours
+	{
+		vec4(1.0f, 0.0f, 0.0f, 1.0f),
+		vec4(0.0f, 1.0f, 0.0f, 1.0f),
+		vec4(0.0f, 0.0f, 1.0f, 1.0f),
+		vec4(1.0f, 1.0f, 0.0f, 1.0f)
+	};
+	// Add to the geometry
+	ramp_b_base.add_buffer(positions, BUFFER_INDEXES::POSITION_BUFFER);
+	ramp_b_base.add_buffer(colours, BUFFER_INDEXES::COLOUR_BUFFER);
+
+	// Load in shaders
+	simple_eff.add_shader(
+		"shaders/basic.vert", // filename
+		GL_VERTEX_SHADER); // type
+	simple_eff.add_shader(
+		"shaders/basic.frag", // filename
+		GL_FRAGMENT_SHADER); // type
+							 // Build effect
+
+	simple_eff.build();
+
+	//vector<vec3> tex_coords
+	//{
+	//	vec3(-1.0f, 1.0f, 0.0f),
+	//	vec3(-1.0f, -1.0f, 0.0f),
+	//	vec3(1.0f, -1.0f, 0.0f),
+	//	vec3(1.0f, 1.0f, 0.0f)
+	//};
 
 	//// TOP RAIL
 	//geometry ramp_t_base;				// base of top ramp
@@ -148,85 +193,106 @@ void createGraphics()
 
 	// BOTTOM RAIL
 	
-	ramp_b_base.set_type(GL_QUADS);
+	//ramp_b_base.set_type(GL_QUADS);
 
 
-	vector<vec3> positions
-	{
-		vec3(1.0f, 1.0f, 0.0f),
-		vec3(-1.0f, 1.0f, 0.0f),
-		vec3(-1.0f, -1.0f, 0.0f),
-		vec3(1.0f, -1.0f, 0.0f)
-	};
-	vector<vec3> rbb_positions
-	{
-		// vec3 world space positions for the top ramp base quad
-		vec3(-3.0f, 1.0f, 0.0f),	// TOP LEFT
-		vec3(-3.0f, 0.0f, 0.0f),	// BOTTOM LEFT
-		vec3(3.0f, -1.0f, 0.0f),	// BOTTOM RIGHT	
-		vec3(3.0f, 0.0f, 0.0f)		// TOP RIGHT
-	};
+	//vector<vec3> positions
+	//{
+	//	vec3(1.0f, 1.0f, 0.0f),
+	//	vec3(-1.0f, 1.0f, 0.0f),
+	//	vec3(-1.0f, -1.0f, 0.0f),
+	//	vec3(1.0f, -1.0f, 0.0f)
+	//};
+	//vector<vec3> rbb_positions
+	//{
+	//	// vec3 world space positions for the top ramp base quad
+	//	vec3(-3.0f, 1.0f, 0.0f),	// TOP LEFT
+	//	vec3(-3.0f, 0.0f, 0.0f),	// BOTTOM LEFT
+	//	vec3(3.0f, -1.0f, 0.0f),	// BOTTOM RIGHT	
+	//	vec3(3.0f, 0.0f, 0.0f)		// TOP RIGHT
+	//};
 
-	geometry ramp_b_rail_l;				// left rail of top ramp
-	vector<vec3> rbl_positions
-	{
-		// vec3 world space positions for the top ramp base quad
-		vec3(-3.0f, 0.0f, 0.0f),	// TOP LEFT
-		vec3(-3.0f, -1.0f, 0.0f),	// BOTTOM LEFT
-		vec3(3.0f, 0.0f, 0.0f),		// BOTTOM RIGHT	
-		vec3(3.0f, 1.0f, 0.0f)		// TOP RIGHT
-	};
+	//geometry ramp_b_rail_l;				// left rail of top ramp
+	//vector<vec3> rbl_positions
+	//{
+	//	// vec3 world space positions for the top ramp base quad
+	//	vec3(-3.0f, 0.0f, 0.0f),	// TOP LEFT
+	//	vec3(-3.0f, -1.0f, 0.0f),	// BOTTOM LEFT
+	//	vec3(3.0f, 0.0f, 0.0f),		// BOTTOM RIGHT	
+	//	vec3(3.0f, 1.0f, 0.0f)		// TOP RIGHT
+	//};
 
-	geometry ramp_b_rail_r;				// right rail of top ramp
-	vector<vec3> rbr_positions
-	{
-		// vec3 world space positions for the top ramp base quad
-		// base quad is viewed from the top and its depth is measured on the Z axis instead of leftright/updown of the railings
-		vec3(-3.0f, 0.0f, 1.0f),	// TOP LEFT
-		vec3(-3.0f, 0.0f, -1.0f),	// BOTTOM LEFT
-		vec3(3.0f, 0.0f, -1.0f),	// BOTTOM RIGHT	
-		vec3(3.0f, 0.0f, 1.0f)		// TOP RIGHT
-	};
-
-
+	//geometry ramp_b_rail_r;				// right rail of top ramp
+	//vector<vec3> rbr_positions
+	//{
+	//	// vec3 world space positions for the top ramp base quad
+	//	// base quad is viewed from the top and its depth is measured on the Z axis instead of leftright/updown of the railings
+	//	vec3(-3.0f, 0.0f, 1.0f),	// TOP LEFT
+	//	vec3(-3.0f, 0.0f, -1.0f),	// BOTTOM LEFT
+	//	vec3(3.0f, 0.0f, -1.0f),	// BOTTOM RIGHT	
+	//	vec3(3.0f, 0.0f, 1.0f)		// TOP RIGHT
+	//};
 
 
 
-	// UNIVERSAL COLOR VECTOR FOR ALL RAMP QUADS
-	vector<vec4> colors
-	{
-		vec4(1.0f, 0.0F, 0.0f, 1.0f),	// RED CORNER
-		vec4(0.0f, 1.0F, 0.0f, 1.0f),	// GREEN CORNER
-		vec4(0.0f, 0.0F, 1.0f, 1.0f),	// BLUE CORNER
-		vec4(1.0f, 1.0F, 0.0f, 1.0f)	// YELLOW CORNER
-	};
-
-	// Ramp bottom base buffer indexes for vector and color
-	ramp_b_base.add_buffer(positions, BUFFER_INDEXES::POSITION_BUFFER);
-	ramp_b_base.add_buffer(colors, BUFFER_INDEXES::COLOUR_BUFFER);
-	//addNormals(ramp_b_base, vec3(0.0f, 1.0f, 0.0f), 4);
-	//ramp_b_base.add_buffer(tex_coords, BUFFER_INDEXES::TEXTURE_COORDS_0);
 
 
-	// shader file path -> ..\\..\\..\\new\\res\\shaders
-	//ramp_b_base = geometry_builder::create_plane(6, 2);
+	//// UNIVERSAL COLOR VECTOR FOR ALL RAMP QUADS
+	//vector<vec4> colors
+	//{
+	//	vec4(1.0f, 0.0F, 0.0f, 1.0f),	// RED CORNER
+	//	vec4(0.0f, 1.0F, 0.0f, 1.0f),	// GREEN CORNER
+	//	vec4(0.0f, 0.0F, 1.0f, 1.0f),	// BLUE CORNER
+	//	vec4(1.0f, 1.0F, 0.0f, 1.0f)	// YELLOW CORNER
+	//};
 
-	simple_eff.add_shader("shaders/phys_basic.vert", GL_VERTEX_SHADER);
-	simple_eff.add_shader("shaders/phys_basic.frag", GL_FRAGMENT_SHADER);
-	simple_eff.build();
+	//// Ramp bottom base buffer indexes for vector and color
+	//ramp_b_base.add_buffer(positions, BUFFER_INDEXES::POSITION_BUFFER);
+	//ramp_b_base.add_buffer(colors, BUFFER_INDEXES::COLOUR_BUFFER);
+	////addNormals(ramp_b_base, vec3(0.0f, 1.0f, 0.0f), 4);
+	////ramp_b_base.add_buffer(tex_coords, BUFFER_INDEXES::TEXTURE_COORDS_0);
+
+
+	//// shader file path -> ..\\..\\..\\new\\res\\shaders
+	////ramp_b_base = geometry_builder::create_plane(6, 2);
+
+	//simple_eff.add_shader("shaders/phys_basic.vert", GL_VERTEX_SHADER);
+	//simple_eff.add_shader("shaders/phys_basic.frag", GL_FRAGMENT_SHADER);
+	//simple_eff.build();
+	//renderer::bind(simple_eff);
+	//auto M = glm::scale(mat4(1.0f), vec3(10.0f, 5.0, 10.0f));
+	//mat3 N(1.0f);
+	//phys::RGBAInt32 col = GREEN;
+	//mat.set_diffuse(col.tovec4());
+	//renderer::bind(mat, "mat");
+	//renderer::bind(phys::getLight(), "light");
+	//glUniformMatrix4fv(simple_eff.get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(phys::getPV() * M));
+	//glUniformMatrix4fv(simple_eff.get_uniform_location("M"), 1, GL_FALSE, value_ptr(M));
+	//glUniformMatrix3fv(simple_eff.get_uniform_location("N"), 1, GL_FALSE, value_ptr(N));
+	//glDisable(GL_CULL_FACE);
+	//renderer::render(ramp_b_base);
+	//glEnable(GL_CULL_FACE);
+}
+
+void renderGraphics()
+{
+	// Bind effect
 	renderer::bind(simple_eff);
-	auto M = glm::scale(mat4(1.0f), vec3(10.0f, 5.0, 10.0f));
+	// Create MVP matrix
+	auto M = glm::translate(mat4(1.0f), vec3(10.0f, 15.0f, -20.0f)) * glm::scale(mat4(1.0f), vec3(1.0f)) * mat4_cast(glm::rotation(vec3(0, 1.0, 0), vec3(0.0f, 1.0f, 0.0f)));
+	auto V = phys::getCamera()->get_view();
+	auto P = phys::getCamera()->get_projection();
+	auto MVP = P * V * M;
 	mat3 N(1.0f);
-	phys::RGBAInt32 col = GREEN;
-	mat.set_diffuse(col.tovec4());
-	renderer::bind(mat, "mat");
+	mat.set_diffuse(vec4(0.0f, 1.0f, 0.0f, 1.0f));
+	renderer::bind(phys::getMaterial(), "mat");
 	renderer::bind(phys::getLight(), "light");
-	glUniformMatrix4fv(simple_eff.get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(phys::getPV() * M));
+	glUniformMatrix4fv(simple_eff.get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(P* V * M));
 	glUniformMatrix4fv(simple_eff.get_uniform_location("M"), 1, GL_FALSE, value_ptr(M));
 	glUniformMatrix3fv(simple_eff.get_uniform_location("N"), 1, GL_FALSE, value_ptr(N));
 	glDisable(GL_CULL_FACE);
 	renderer::render(ramp_b_base);
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 }
 
 bool update(double delta_time)
@@ -299,21 +365,30 @@ bool update(double delta_time)
 	phys::getCamera()->update((float)delta_time);
 	xpos1 = current_x;
 	ypos1 = current_y;
-	//cout << endl << endl << endl << SceneList.at(0)->GetPosition().y << endl;
-	//cout << SceneList.at(0)->GetName() << endl;
-	cout << phys::getCamera()->get_pitch();
+
 	return true;
 }
 
 bool load_content()
 {
 	phys::Init();
-
+	//createGraphics();
 	glfwSetInputMode(renderer::get_window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwGetCursorPos(renderer::get_window(), &xpos1, &ypos1);
 
+
+	// BALL PARTICLE
 	SceneList.push_back(move(CreateParticle()));
-	SceneList.push_back(CreatePlane());
+
+	// FLOOR PLANE
+	SceneList.push_back(CreatePlane(vec3(0.0f, 0.0f, 0.0f)));
+
+	// RAMP PLANES
+	SceneList.push_back(CreateRamp(vec3(5.0f, 10.0f, 0.0f)));
+	//SceneList.push_back(CreatePlane(vec3(2.0f, 20.0f, 0.0f)));
+	//SceneList.push_back(CreatePlane(vec3(3.0f, 30.0f, 0.0f)));
+
+
 	phys::SetCameraPos(vec3(-10.0f, 10.0f, 40.0f));
 	phys::SetCameraTarget(vec3(-2.0f, 10.0f, 2.0f));
 	auto aspect = static_cast<float>(renderer::get_screen_width()) / static_cast<float>(renderer::get_screen_height());
@@ -336,7 +411,7 @@ bool render()
 	{
 		e->Render();
 	}
-	phys::DrawScene();
+	//phys::DrawScene();
 	if (norms == true)
 	{
 		for (auto &e : SceneList)
@@ -346,7 +421,7 @@ bool render()
 				vec3 normal = e->getCompatibleComponent<cPlaneCollider>()->normal;
 				vec3 wp = e->getCompatibleComponent<cPlaneCollider>()->GetParent()->GetPosition();
 				vec3 temp_lp = wp + (normal * vec3(10));
-				phys::DrawLine(wp, temp_lp, true, RED);
+				phys::DrawLine(wp, temp_lp, true, BLUE);
 				//e->getCompatibleComponent<cPlaneCollider>()->GetParent()->
 			}
 		}
@@ -354,6 +429,7 @@ bool render()
 
 	// Render visual axis indicator
 	renderAxis();
+	//renderGraphics();
 
 	return true;
 }

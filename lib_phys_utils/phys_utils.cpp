@@ -48,16 +48,6 @@ namespace phys
 		renderer::setClearColour(0, 0, 0);
 	}
 
-	glm::vec3 getCamPosition()
-	{
-		return cam.get_position();
-	}
-
-	graphics_framework::free_camera* getCamera()
-	{
-		return &cam;
-	}
-
 	graphics_framework::directional_light getLight()
 	{
 		return light;
@@ -66,6 +56,16 @@ namespace phys
 	graphics_framework::material getMaterial()
 	{
 		return mat;
+	}
+
+	glm::vec3 getCamPosition()
+	{
+		return cam.get_position();
+	}
+
+	graphics_framework::free_camera* getCamera()
+	{
+		return &cam;
 	}
 
 	glm::mat4 getPV()
@@ -235,6 +235,23 @@ namespace phys
 		glEnable(GL_CULL_FACE);
 	}
 
+	void DrawPlane(const glm::vec3 & p0, const glm::vec3 & norm, const glm::vec3 & scale, const unsigned & width, const unsigned & depth, const RGBAInt32 col)
+	{
+		static geometry geom = geometry_builder::create_plane(width, depth);
+		renderer::bind(effP);
+		auto M = glm::translate(mat4(1.0f), p0) * glm::scale(mat4(1.0f), scale) * mat4_cast(glm::rotation(vec3(0, 1.0, 0), norm));
+		mat3 N(1.0f);
+		mat.set_diffuse(col.tovec4());
+		renderer::bind(mat, "mat");
+		renderer::bind(light, "light");
+		glUniformMatrix4fv(effP.get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(PV * M));
+		glUniformMatrix4fv(effP.get_uniform_location("M"), 1, GL_FALSE, value_ptr(M));
+		glUniformMatrix3fv(effP.get_uniform_location("N"), 1, GL_FALSE, value_ptr(N));
+		glDisable(GL_CULL_FACE);
+		renderer::render(geom);
+		glEnable(GL_CULL_FACE);
+	}
+
 	void SetCameraPos(const glm::vec3 &p0) 
 	{
 		cam.set_position(p0);
@@ -267,6 +284,7 @@ namespace phys
 
 	const RGBAInt32 RandomColour()
 	{
+		srand((unsigned)time(NULL));
 		RGBAInt32 c;
 		c.b[0] = rand() % 256;
 		c.b[1] = rand() % 256;
