@@ -27,7 +27,7 @@ cParticle::~cParticle()
 void cParticle::SetMass(double m)
 {
 	mass = m;
-	inversemass = 1 / mass;
+	inversemass = 1.0 / mass;
 }
 
 double cParticle::getMass()
@@ -96,19 +96,20 @@ void cParticle::Integrate(const double t, const double dt)
 
 	if (GetParent()->GetName() != "Plane")
 	{
-		// calculate velocity from current and previous position
-
-		velocity = position - prev_position;
+		// calculate velocity from current and previous position - verlet
+		dvec3 velocity_ = position - prev_position;
 		// set previous position to current position
 		prev_position = position;
 		// position += v + a * (dt^2)
-		//position += (velocity * dt) + (GetGravity() * pow(dt, 2) * 0.5); // mine, nope
-		position += velocity + ((forces + GetGravity() /* final A */) * getInverseMass()) * pow(dt, 2);
+		dvec3 acceleration_;
+		acceleration_ = forces * getInverseMass(); // F / m
+		acceleration_ += GetGravity();
+		position += velocity_ + (acceleration_ * dt * dt);
+		//position += velocity_ + (GetGravity()) * pow(dt, 2);
+		cout << "\t"<< velocity_.y << endl;
 		//cout << forces.x << forces.y << forces.z << flush;
-		forces = dvec3(0);
-		velocity = vec3(0);
+		forces = dvec3(0); //  set acting forces back to 0
 		GetParent()->SetPosition(position);
-		
 	}
 }
 

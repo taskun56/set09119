@@ -58,6 +58,23 @@ namespace phys
 		return cam;
 	}
 
+	graphics_framework::directional_light getLight()
+	{
+		return light;
+	}
+
+	graphics_framework::material getMaterial()
+	{
+		return mat;
+	}
+
+	glm::mat4 getPV()
+	{
+		return PV;
+	}
+
+
+
 	const glm::vec3 UP(0, 1.0f, 0);
 	void DrawArrow(const glm::vec3 &p0, const glm::vec3 &p1, const double thickness, const RGBAInt32 col)
 	{
@@ -262,7 +279,7 @@ namespace phys
 		renderer::bind(effG);
 		auto M = glm::scale(mat4(1.0f), vec3(10.0f, 1.0, 10.0f));
 		mat3 N(1.0f);
-		RGBAInt32 col = GREY;
+		RGBAInt32 col = BLUE;
 		mat.set_diffuse(col.tovec4());
 		renderer::bind(mat, "mat");
 		renderer::bind(light, "light");

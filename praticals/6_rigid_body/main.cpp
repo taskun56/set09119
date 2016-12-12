@@ -20,6 +20,9 @@ double xpos1;
 double ypos1;
 double cursor_x;
 double cursor_y;
+geometry ramp_b_base;				// base of top ramp
+material mat;
+effect simple_eff;
 
 unique_ptr<Entity> CreateParticle()
 {
@@ -65,8 +68,35 @@ unique_ptr<Entity> CreatePlane()
 	return ent;
 }
 
+void addNormals(geometry geom, vec3 normal, int vertices)
+{
+	// need to create a looping method that adds the passed through
+	// normal to the buffer for every vertex on the given quad
+	vector<vec3> normals;
+
+	// for every vertex on the given geom
+	for (int i = 0; i < vertices; i++)
+	{
+		// add the given normal to a vector of normals
+		normals.push_back(normal);
+	}
+
+	// then add those normals to the given geometry's normal buffer
+	geom.add_buffer(normals, BUFFER_INDEXES::NORMAL_BUFFER);
+}
+
 void createGraphics()
 {
+
+
+	vector<vec3> tex_coords
+	{
+		vec3(-1.0f, 1.0f, 0.0f),
+		vec3(-1.0f, -1.0f, 0.0f),
+		vec3(1.0f, -1.0f, 0.0f),
+		vec3(1.0f, 1.0f, 0.0f)
+	};
+
 	//// TOP RAIL
 	//geometry ramp_t_base;				// base of top ramp
 	//ramp_t_base.set_type(GL_QUADS);
@@ -118,9 +148,17 @@ void createGraphics()
 
 
 	// BOTTOM RAIL
-	geometry ramp_b_base;				// base of top ramp
+	
 	ramp_b_base.set_type(GL_QUADS);
 
+
+	vector<vec3> positions
+	{
+		vec3(1.0f, 1.0f, 0.0f),
+		vec3(-1.0f, 1.0f, 0.0f),
+		vec3(-1.0f, -1.0f, 0.0f),
+		vec3(1.0f, -1.0f, 0.0f)
+	};
 	vector<vec3> rbb_positions
 	{
 		// vec3 world space positions for the top ramp base quad
@@ -165,17 +203,36 @@ void createGraphics()
 	};
 
 	// Ramp bottom base buffer indexes for vector and color
-	ramp_b_base.add_buffer(rbb_positions, BUFFER_INDEXES::POSITION_BUFFER);
+	ramp_b_base.add_buffer(positions, BUFFER_INDEXES::POSITION_BUFFER);
 	ramp_b_base.add_buffer(colors, BUFFER_INDEXES::COLOUR_BUFFER);
+	//addNormals(ramp_b_base, vec3(0.0f, 1.0f, 0.0f), 4);
+	//ramp_b_base.add_buffer(tex_coords, BUFFER_INDEXES::TEXTURE_COORDS_0);
 
 
-	 // shader file path -> ..\\..\\..\\new\\res\\shaders
+	// shader file path -> ..\\..\\..\\new\\res\\shaders
+	//ramp_b_base = geometry_builder::create_plane(6, 2);
 
+	simple_eff.add_shader("shaders/phys_basic.vert", GL_VERTEX_SHADER);
+	simple_eff.add_shader("shaders/phys_basic.frag", GL_FRAGMENT_SHADER);
+	simple_eff.build();
+	renderer::bind(simple_eff);
+	auto M = glm::scale(mat4(1.0f), vec3(10.0f, 5.0, 10.0f));
+	mat3 N(1.0f);
+	phys::RGBAInt32 col = GREEN;
+	mat.set_diffuse(col.tovec4());
+	renderer::bind(mat, "mat");
+	renderer::bind(phys::getLight(), "light");
+	glUniformMatrix4fv(simple_eff.get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(phys::getPV() * M));
+	glUniformMatrix4fv(simple_eff.get_uniform_location("M"), 1, GL_FALSE, value_ptr(M));
+	glUniformMatrix3fv(simple_eff.get_uniform_location("N"), 1, GL_FALSE, value_ptr(N));
+	glDisable(GL_CULL_FACE);
+	renderer::render(ramp_b_base);
+	glEnable(GL_CULL_FACE);
 }
 
 bool update(double delta_time)
 {
-	ballP->AddLinearForce(dvec3(0.0, -15.0, 0.0));
+	//ballP->AddLinearForce(dvec3(0.0, -15.0, 0.0));
 	static double t = 0.0;
 	static double accumulator = 0.0;
 	accumulator += delta_time;
@@ -198,17 +255,17 @@ bool update(double delta_time)
 	delta_x *= ratio_width;
 	delta_y *= ratio_height;
 
-	cout << "\r" <<  current_x << "   " << current_y << "   " << delta_x << "   " << delta_y << std::flush;
+	//cout << "\r" << current_x << "   " << current_y << "   " << delta_x << "   " << delta_y << std::flush;
 
 	phys::getCamera().rotate((float)delta_x, (float)-delta_y);
 
 	// Ball "movment" controls. Add impulse in the given axis
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_W))		{ ballP->AddLinearForce(vec3(-20.0f, 0.0f, 0.0f));	}
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_S))		{ ballP->AddLinearForce(vec3(20.0f, 0.0f, 0.0f));	}
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_A))		{ ballP->AddLinearForce(vec3(0.0f, 0.0f, 20.0f));	}
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_D))		{ ballP->AddLinearForce(vec3(0.0f, 0.0f, -20.0f));	}
-	if (glfwGetKey(renderer::get_window(), GLFW_KEY_SPACE))	{ ballP->AddLinearForce(vec3(0.0f, 20.0f, 0.0f));	}
-	
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_W)) { ballP->AddLinearForce(vec3(0.0f, 0.0f, -20.0f)); }
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_S)) { ballP->AddLinearForce(vec3(0.0f, 0.0f, 20.0f)); }
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_A)) { ballP->AddLinearForce(vec3(-20.0f, 0.0f, 0.0f)); }
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_D)) { ballP->AddLinearForce(vec3(20.0f, 0.0f, 0.0f)); }
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_SPACE)) { ballP->AddLinearForce(vec3(0.0f, 20.0f, 0.0f)); }
+
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_I)) { phys::SetCameraPos(phys::getCamPosition() += (dvec3(0.0f, 0.0f, -5.0f) * (delta_time * 10.0f))); }
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_J)) { phys::SetCameraPos(phys::getCamPosition() += (dvec3(-5.0f, 0.0f, 0.0f) * (delta_time * 10.0f))); }
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_K)) { phys::SetCameraPos(phys::getCamPosition() += (dvec3(0.0f, 0.0f, 5.0f) * (delta_time * 10.0f))); }
@@ -251,10 +308,10 @@ bool load_content()
 	glfwGetCursorPos(renderer::get_window(), &xpos1, &ypos1);
 	SceneList.push_back(move(CreateParticle()));
 	SceneList.push_back(CreatePlane());
-	phys::SetCameraPos(vec3(20.0f, 10.0f, 20.0f));
-	phys::SetCameraTarget(vec3(0, 10.0f, 0));
+	phys::SetCameraPos(vec3(-10.0f, 10.0f, 40.0f));
+	phys::SetCameraTarget(vec3(-2.0f, 10.0f, 2.0f));
 	auto aspect = static_cast<float>(renderer::get_screen_width()) / static_cast<float>(renderer::get_screen_height());
-	phys::getCamera().set_projection(quarter_pi<float>(), aspect , 2.414f, 1000.0f);
+	phys::getCamera().set_projection(quarter_pi<float>(), aspect, 2.414f, 1000.0f);
 	InitPhysics();
 	return true;
 }
@@ -273,7 +330,7 @@ bool render()
 	{
 		e->Render();
 	}
-	//phys::DrawScene();
+	phys::DrawScene();
 	if (norms == true)
 	{
 		for (auto &e : SceneList)

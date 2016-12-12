@@ -51,6 +51,9 @@ void DrawCube(const glm::vec3 &p0, const glm::vec3 &scale = glm::vec3(1.0f, 1.0f
 void DrawCube(const glm::mat4 &m, const RGBAInt32 col = RED);
 glm::vec3 getCamPosition();
 graphics_framework::free_camera getCamera();
+graphics_framework::directional_light getLight();
+graphics_framework::material getMaterial();
+glm::mat4 getPV();
 }
 
 glm::vec3 projectOntoPlane(const glm::vec3 &point, const glm::vec3 &planeNormal,
