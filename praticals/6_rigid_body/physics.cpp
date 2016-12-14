@@ -42,7 +42,7 @@ void ResolveP(cParticle *const b, const collisionInfo &ci, bool which)
 	const double w = (which ? -1.0 : 1.0);
 	b->position += (w * ci.normal) * (ci.depth * 0.5);
 	const double currentSpeed = glm::length(b->position - b->prev_position);		
-	b->prev_position = b->position + dvec3((-w * ci.normal) * currentSpeed * coef); 
+	b->prev_position = b->position + dvec3((-w * ci.normal) * currentSpeed * coef); // TODO
 	// The above line needs to be changed. Currently "bounces" the ball in the direction of the plane's normal on collision.
 	// Needs to be changed to bounce the ball on the mirror angle to the angle of reflection from the plane's normal
 	// e.g. if the ball hits a plane with a normal of 1 (90 degrees), at an angle of 45 degrees the initial angle of deflection should be 45 degrees to the normal of the plane

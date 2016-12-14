@@ -63,7 +63,7 @@ unique_ptr<Entity> CreatePlane(vec3 pos)
 	unique_ptr<cShapeRenderer> renderComponent(new cShapeRenderer(cShapeRenderer::PLANE, phys::RandomColour()));
 	renderComponent->SetColour(phys::RandomColour());
 	ent->AddComponent(physComponent);
-	ent->AddComponent(unique_ptr<Component>(new cPlaneCollider()));
+	ent->AddComponent(unique_ptr<Component>(new cPlaneCollider(glm::dvec3(0.0f, 1.0f, 0.0f))));
 	ent->AddComponent(unique_ptr<Component>(move(renderComponent)));
 	ent->SetName("Plane");
 	return ent;
@@ -78,7 +78,7 @@ unique_ptr<Entity> CreateRamp(vec3 pos, phys::RGBAInt32 col)
 	unique_ptr<cShapeRenderer> renderComponent(new cShapeRenderer(cShapeRenderer::RAMP, col));
 	renderComponent->SetColour(phys::RandomColour());
 	ent->AddComponent(physComponent);
-	ent->AddComponent(unique_ptr<Component>(new cPlaneCollider()));
+	ent->AddComponent(unique_ptr<Component>(new cPlaneCollider(glm::dvec3(0.0f, 1.0f, 0.0f))));
 	ent->AddComponent(unique_ptr<Component>(move(renderComponent)));
 	ent->SetName("Plane");
 	return ent;
@@ -124,6 +124,13 @@ bool update(double delta_time)
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_A)) { ballP->AddLinearForce(vec3(-20.0f, 0.0f, 0.0f)); }
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_D)) { ballP->AddLinearForce(vec3(20.0f, 0.0f, 0.0f)); }
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_SPACE)) { ballP->AddLinearForce(vec3(0.0f, 20.0f, 0.0f)); }
+
+	if (glfwGetKey(renderer::get_window(), GLFW_KEY_PAGE_UP))
+	{  
+		dquat rot(SceneList.at(1)->GetRotation());
+		SceneList.at(1)->SetRotation(rot += dquat(vec3(0.0f, 0.0f, 1.0f)));
+		cout << "New rotation is " << SceneList.at(1)->GetRotation().x << "   " << SceneList.at(1)->GetRotation().y << "   " << SceneList.at(1)->GetRotation().z << endl;
+	}
 
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_I)) { phys::getCamera()->move(vec3(0.0f, 0.0f, 1.0f)); };
 	if (glfwGetKey(renderer::get_window(), GLFW_KEY_J)) { phys::getCamera()->move(vec3(-1.0f, 0.0f, 0.0f)); }

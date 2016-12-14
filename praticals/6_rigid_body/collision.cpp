@@ -57,6 +57,7 @@ namespace collision
 			if ((length(collisionPt - p.GetParent()->GetPosition()) < (p.GetParent()->getDepth() / 2)) && (length(collisionPt - p.GetParent()->GetPosition()) < (p.GetParent()->getWidth() / 2)))
 			{
 				// create the collision here
+				cout << "The normal of the colliding plane is " << p.normal.x << "  " << p.normal.y << "   " << p.normal.z << endl;
 				civ.push_back({ &s, &p, sp - p.normal * distance, p.normal, s.radius - distance });
 				return true;
 			}

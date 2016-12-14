@@ -106,7 +106,7 @@ void cParticle::Integrate(const double t, const double dt)
 		acceleration_ += GetGravity();
 		position += velocity_ + (acceleration_ * dt * dt);
 		//position += velocity_ + (GetGravity()) * pow(dt, 2);
-		cout << "\t"<< velocity_.y << endl;
+		//cout << "\t"<< velocity_.y << endl;
 		//cout << forces.x << forces.y << forces.z << flush;
 		forces = dvec3(0); //  set acting forces back to 0
 		GetParent()->SetPosition(position);
@@ -222,7 +222,7 @@ cCollider::~cCollider()
 
 void cCollider::Update(double delta) {}
 cSphereCollider::cSphereCollider() : radius(1.0), cCollider("SphereCollider") {}
-cPlaneCollider::cPlaneCollider() : normal(dvec3(0, 1.0, 0)), cCollider("PlaneCollider") {}
+cPlaneCollider::cPlaneCollider(dvec3 norm) : normal(norm), cCollider("PlaneCollider") {}
 cBoxCollider::cBoxCollider() : radius(1.0), cCollider("BoxCollider")
 {
 

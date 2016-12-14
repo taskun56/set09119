@@ -112,6 +112,7 @@ void Entity::SetPosition(const dvec3 &v3) {
 
 void Entity::SetRotation(const dvec3 &v3) {
 	rotation_ = glm::quat(v3);
+	// need to rotate the normal as well
 	changed_ = true;
 }
 

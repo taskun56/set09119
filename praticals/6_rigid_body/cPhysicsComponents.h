@@ -105,7 +105,7 @@ class cPlaneCollider : public cCollider
 {
 public:
 	glm::dvec3 normal;
-	cPlaneCollider();
+	cPlaneCollider(glm::dvec3 norm);
 
 private:
 };
