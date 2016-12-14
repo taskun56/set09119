@@ -4,215 +4,214 @@
 #include <glm/gtx/transform.hpp>
 using namespace std;
 using namespace glm;
-namespace collision {
-	
-bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cSphereCollider &c1, const cSphereCollider &c2) 
+namespace collision 
 {
-  const dvec3 p1 = c1.GetParent()->GetPosition();
-  const dvec3 p2 = c2.GetParent()->GetPosition();
-  const dvec3 d = p2 - p1;
-  const double distance = glm::length(d);
-  const double sumRadius = c1.radius + c2.radius;
-  if (distance < sumRadius) 
-  {
-    auto depth = sumRadius - distance;
-    auto norm = -glm::normalize(d);
-    auto pos = p1 - norm * (c1.radius - depth * 0.5f);
-    civ.push_back({&c1, &c2, pos, norm, depth});
-    return true;
-  }
-  return false;
-}
 
-bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cSphereCollider &s, const cPlaneCollider &p) { // TODO HERE DETECT
-  const dvec3 sp = s.GetParent()->GetPosition();
-  const dvec3 pp = p.GetParent()->GetPosition();
-
-  // Calculate a vector from a point on the plane to the center of the sphere
-  const dvec3 vecTemp(sp - pp);
-
-  // Calculate the distance: dot product of the new vector with the plane's normal
-  double distance = dot(vecTemp, p.normal);
-
-
-
-  //cout << distance;
-
-  if (distance <= s.radius) 
-  {
-
-	  dvec3 collisionPt = sp - (p.normal * distance);
-	  cout << "Collision detected at " << collisionPt.x << " " << collisionPt.y << " " << collisionPt.z << endl;
-	  vec3 endpoint(collisionPt);
-
-	  endpoint.y += 25.0f;
-
-	  cout << "Line end at " << endpoint.x << " " << endpoint.y << " " << endpoint.z << endl;
-	  phys::DrawLine(collisionPt, endpoint, true, BLUE);
-	  // ball is within range of the plane - test its point projection
-
-	  // need to change both of these to test the normals/positions of a plane perpendicular to the collision plane
-	  // to get the forward and side vectors
-	  // that lets me get the W and D from the reference
-	  vec3 proj_forward = projectOntoPlane(collisionPt, p.normal, p.GetParent()->GetPosition()); 
-	  vec3 proj_right = projectOntoPlane(collisionPt, p.normal, p.GetParent()->GetPosition());
-
-
-
-	  // distance X axis < width = no collision (right vec)
-	  // distance Z axis < depth = no collision (forward vec)
-	  //if ((length(collisionPt - p.GetParent()->GetPosition()) > p.GetParent()->getDepth()) || (length(collisionPt - p.GetParent()->GetPosition()) > p.GetParent()->getWidth())) {
-		 // return false;
-	  //}
-	  if ((length(collisionPt.z - proj_forward.z) < p.GetParent()->getDepth()) && (length(collisionPt.x - proj_forward.x) < p.GetParent()->getWidth()))
-	  {
-		  // create the collision here
-		  civ.push_back({ &s, &p, sp - p.normal * distance, p.normal, s.radius - distance });
-		  return true;
-	  }
-	  // create the collision here
- //   civ.push_back({&s, &p, sp - p.normal * distance, p.normal, s.radius - distance});
-	////cout << "Sphere plane collision detected" << endl;
- //   return true;
-  }
-
-  return false;
-}
-
-bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cSphereCollider &c1, const cBoxCollider &c2) {
-  const dvec3 sp = c1.GetParent()->GetPosition();
-  const dvec3 bp = c2.GetParent()->GetPosition();
-  if (length(sp - bp) < c1.radius + c2.radius) {
-    // TODO
-    //cout << "Sphere Box" << endl;
-    // return true;
-  }
-
-  return false;
-}
-
-bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cPlaneCollider &c1, const cPlaneCollider &c2) {
-  // TODO
-  //cout << "PLANE PLANE" << endl;
-  return false;
-}
-
-bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cPlaneCollider &p, const cBoxCollider &b) 
-{
-  const dvec3 pp = p.GetParent()->GetPosition();
-  const dvec3 bp = b.GetParent()->GetPosition();
-
-  // local coords on cube
-  dvec3 points[8] = {dvec3(b.radius, b.radius, b.radius),   dvec3(-b.radius, b.radius, b.radius),
-                     dvec3(b.radius, -b.radius, b.radius),  dvec3(-b.radius, -b.radius, b.radius),
-                     dvec3(b.radius, b.radius, -b.radius),  dvec3(-b.radius, b.radius, -b.radius),
-                     dvec3(b.radius, -b.radius, -b.radius), dvec3(-b.radius, -b.radius, -b.radius)};
-
-  // transfrom to global
-  const mat4 m = glm::translate(bp) * mat4_cast(b.GetParent()->GetRotation());
-  for (int i = 0; i < 8; i++) {
-    points[i] = dvec3(m * dvec4(points[i], 1.0));
-  }
-
-  // For each point on the cube, which side of cube are they on?
-  double distances[8];
-  bool isCollided = false;
-  for (int i = 0; i < 8; i++) {
-    dvec3 planeNormal = p.normal;
-
-    distances[i] = dot(pp, planeNormal) - dot(points[i], planeNormal);
-
-    if (distances[i] > 0)
+	bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cSphereCollider &c1, const cSphereCollider &c2)
 	{
-      //cout << "CuboidPlane!\n";
-      civ.push_back({&p, &b, points[i] + planeNormal * distances[i], planeNormal, distances[i]});
-      isCollided = true;
+		const dvec3 p1 = c1.GetParent()->GetPosition();
+		const dvec3 p2 = c2.GetParent()->GetPosition();
+		const dvec3 d = p2 - p1;
+		const double distance = glm::length(d);
+		const double sumRadius = c1.radius + c2.radius;
+		if (distance < sumRadius)
+		{
+			auto depth = sumRadius - distance;
+			auto norm = -glm::normalize(d);
+			auto pos = p1 - norm * (c1.radius - depth * 0.5f);
+			civ.push_back({ &c1, &c2, pos, norm, depth });
+			return true;
+		}
+		return false;
+	}
 
-    }
-  }
-  return isCollided;
-}
+	bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cSphereCollider &s, const cPlaneCollider &p)
+	{ // TODO HERE DETECT
+		const dvec3 sp = s.GetParent()->GetPosition();
+		const dvec3 pp = p.GetParent()->GetPosition();
 
-bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cBoxCollider &c1, const cBoxCollider &c2) {
-  //TODO:
-  //cout << "Box Box" << endl;
-  return false;
-}
+		// Calculate a vector from a point on the plane to the center of the sphere
+		const dvec3 vecTemp(sp - pp);
 
-bool IsColliding(std::vector<collisionInfo> &civ, const cCollider &c1, const cCollider &c2) { // TODO
-  enum shape { UNKOWN = 0, PLANE, SPHERE, BOX };
-  shape s1 = UNKOWN;
-  shape s2 = UNKOWN;
-  if (dynamic_cast<const cSphereCollider *>(&c1))
-  {
-    s1 = SPHERE;
-  } else if (dynamic_cast<const cPlaneCollider *>(&c1)) {
-    s1 = PLANE;
-  } else if (dynamic_cast<const cBoxCollider *>(&c1)) {
-    s1 = BOX;
-  }
+		// Calculate the distance: dot product of the new vector with the plane's normal
+		double distance = dot(vecTemp, p.normal);
 
-  if (dynamic_cast<const cSphereCollider *>(&c2))
-  {
-    s2 = SPHERE;
-  } 
-  else if (dynamic_cast<const cPlaneCollider *>(&c2)) 
-  {
-    s2 = PLANE;
-  } 
-  else if (dynamic_cast<const cBoxCollider *>(&c2)) 
-  {
-    s2 = BOX;
-  }
 
-  if (!s1 || !s2) {
-    cout << "Routing Error" << endl;
-    return false;
-  }
-  if (s1 == PLANE) 
-  {
-    if (s2 == PLANE) 
+
+		//cout << distance;
+
+		if ((distance <= s.radius) && (!(s.GetParent()->GetPosition().y < p.GetParent()->GetPosition().y)))
+		{
+			dvec3 collisionPt = sp - (p.normal * distance);
+
+			// DRAW NORMAL FROM COLLISION POINT ON PLANE - doesnt work - outside render function?
+			cout << "Collision detected at " << collisionPt.x << " " << collisionPt.y << " " << collisionPt.z << endl;
+			vec3 endpoint(collisionPt);
+			endpoint.y += 25.0f;
+			phys::DrawLine(collisionPt, endpoint, true, BLUE);
+
+			// Vector projected from plane normal at its position to the collision point
+			vec3 proj_ = projectOntoPlane(collisionPt, p.normal, p.GetParent()->GetPosition());
+
+			// if the length of the vector from the position of the plane and the collision point is shorter than the depth and the width than the collision point must be within the plane space
+			if ((length(collisionPt - p.GetParent()->GetPosition()) < (p.GetParent()->getDepth() / 2)) && (length(collisionPt - p.GetParent()->GetPosition()) < (p.GetParent()->getWidth() / 2)))
+			{
+				// create the collision here
+				civ.push_back({ &s, &p, sp - p.normal * distance, p.normal, s.radius - distance });
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cSphereCollider &c1, const cBoxCollider &c2)
 	{
-      return IsCollidingCheck(civ, dynamic_cast<const cPlaneCollider &>(c1), dynamic_cast<const cPlaneCollider &>(c2));
-    } 
-	else if (s2 == SPHERE) 
+		const dvec3 sp = c1.GetParent()->GetPosition();
+		const dvec3 bp = c2.GetParent()->GetPosition();
+		if (length(sp - bp) < c1.radius + c2.radius) 
+		{
+			// TODO
+			//cout << "Sphere Box" << endl;
+			// return true;
+		}
+
+		return false;
+	}
+
+	bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cPlaneCollider &c1, const cPlaneCollider &c2)
 	{
-		//cout << "Sphere plane collision detected" << endl; // does detect
-      return IsCollidingCheck(civ, dynamic_cast<const cSphereCollider &>(c1), dynamic_cast<const cPlaneCollider &>(c2));
-    } 
-	else if (s2 == BOX) 
+		// TODO
+		//cout << "PLANE PLANE" << endl;
+		return false;
+	}
+
+	bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cPlaneCollider &p, const cBoxCollider &b)
 	{
-      return IsCollidingCheck(civ, dynamic_cast<const cPlaneCollider &>(c1), dynamic_cast<const cBoxCollider &>(c2));
-    } 
-	else 
+		const dvec3 pp = p.GetParent()->GetPosition();
+		const dvec3 bp = b.GetParent()->GetPosition();
+
+		// local coords on cube
+		dvec3 points[8] = { dvec3(b.radius, b.radius, b.radius),   dvec3(-b.radius, b.radius, b.radius),
+						   dvec3(b.radius, -b.radius, b.radius),  dvec3(-b.radius, -b.radius, b.radius),
+						   dvec3(b.radius, b.radius, -b.radius),  dvec3(-b.radius, b.radius, -b.radius),
+						   dvec3(b.radius, -b.radius, -b.radius), dvec3(-b.radius, -b.radius, -b.radius) };
+
+		// transfrom to global
+		const mat4 m = glm::translate(bp) * mat4_cast(b.GetParent()->GetRotation());
+		for (int i = 0; i < 8; i++) {
+			points[i] = dvec3(m * dvec4(points[i], 1.0));
+		}
+
+		// For each point on the cube, which side of cube are they on?
+		double distances[8];
+		bool isCollided = false;
+		for (int i = 0; i < 8; i++) {
+			dvec3 planeNormal = p.normal;
+
+			distances[i] = dot(pp, planeNormal) - dot(points[i], planeNormal);
+
+			if (distances[i] > 0)
+			{
+				//cout << "CuboidPlane!\n";
+				civ.push_back({ &p, &b, points[i] + planeNormal * distances[i], planeNormal, distances[i] });
+				isCollided = true;
+
+			}
+		}
+		return isCollided;
+	}
+
+	bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cBoxCollider &c1, const cBoxCollider &c2)
 	{
-      cout << "Routing Error" << endl;
-      return false;
-    }
-  } else if (s1 == SPHERE) {
-    if (s2 == PLANE) {
-      return IsCollidingCheck(civ, dynamic_cast<const cSphereCollider &>(c1), dynamic_cast<const cPlaneCollider &>(c2)); // TODO HERE NEXT - 
-    } else if (s2 == SPHERE) {
-      return IsCollidingCheck(civ, dynamic_cast<const cSphereCollider &>(c1),
-                              dynamic_cast<const cSphereCollider &>(c2));
-    } else if (s2 == BOX) {
-      return IsCollidingCheck(civ, dynamic_cast<const cSphereCollider &>(c1), dynamic_cast<const cBoxCollider &>(c2));
-    } else {
-      cout << "Routing Error" << endl;
-      return false;
-    }
-  } else if (s1 == BOX) {
-    if (s2 == PLANE) {
-      return IsCollidingCheck(civ, dynamic_cast<const cPlaneCollider &>(c2), dynamic_cast<const cBoxCollider &>(c1));
-    } else if (s2 == SPHERE) {
-      return IsCollidingCheck(civ, dynamic_cast<const cSphereCollider &>(c2), dynamic_cast<const cBoxCollider &>(c1));
-    } else if (s2 == BOX) {
-      return IsCollidingCheck(civ, dynamic_cast<const cBoxCollider &>(c2), dynamic_cast<const cBoxCollider &>(c1));
-    } else {
-      cout << "Routing Error" << endl;
-      return false;
-    }
-  }
-  return false;
-}
+		//cout << "Box Box" << endl;
+		return false;
+	}
+
+	bool IsColliding(std::vector<collisionInfo> &civ, const cCollider &c1, const cCollider &c2) { // TODO
+		enum shape { UNKOWN = 0, PLANE, SPHERE, BOX };
+		shape s1 = UNKOWN;
+		shape s2 = UNKOWN;
+		if (dynamic_cast<const cSphereCollider *>(&c1))
+		{
+			s1 = SPHERE;
+		}
+		else if (dynamic_cast<const cPlaneCollider *>(&c1)) {
+			s1 = PLANE;
+		}
+		else if (dynamic_cast<const cBoxCollider *>(&c1)) {
+			s1 = BOX;
+		}
+
+		if (dynamic_cast<const cSphereCollider *>(&c2))
+		{
+			s2 = SPHERE;
+		}
+		else if (dynamic_cast<const cPlaneCollider *>(&c2))
+		{
+			s2 = PLANE;
+		}
+		else if (dynamic_cast<const cBoxCollider *>(&c2))
+		{
+			s2 = BOX;
+		}
+
+		if (!s1 || !s2) {
+			cout << "Routing Error" << endl;
+			return false;
+		}
+		if (s1 == PLANE)
+		{
+			if (s2 == PLANE)
+			{
+				return IsCollidingCheck(civ, dynamic_cast<const cPlaneCollider &>(c1), dynamic_cast<const cPlaneCollider &>(c2));
+			}
+			else if (s2 == SPHERE)
+			{
+				//cout << "Sphere plane collision detected" << endl; // does detect
+				return IsCollidingCheck(civ, dynamic_cast<const cSphereCollider &>(c1), dynamic_cast<const cPlaneCollider &>(c2));
+			}
+			else if (s2 == BOX)
+			{
+				return IsCollidingCheck(civ, dynamic_cast<const cPlaneCollider &>(c1), dynamic_cast<const cBoxCollider &>(c2));
+			}
+			else
+			{
+				cout << "Routing Error" << endl;
+				return false;
+			}
+		}
+		else if (s1 == SPHERE) {
+			if (s2 == PLANE) {
+				return IsCollidingCheck(civ, dynamic_cast<const cSphereCollider &>(c1), dynamic_cast<const cPlaneCollider &>(c2)); // TODO HERE NEXT - 
+			}
+			else if (s2 == SPHERE) {
+				return IsCollidingCheck(civ, dynamic_cast<const cSphereCollider &>(c1),
+					dynamic_cast<const cSphereCollider &>(c2));
+			}
+			else if (s2 == BOX) {
+				return IsCollidingCheck(civ, dynamic_cast<const cSphereCollider &>(c1), dynamic_cast<const cBoxCollider &>(c2));
+			}
+			else {
+				cout << "Routing Error" << endl;
+				return false;
+			}
+		}
+		else if (s1 == BOX) {
+			if (s2 == PLANE) {
+				return IsCollidingCheck(civ, dynamic_cast<const cPlaneCollider &>(c2), dynamic_cast<const cBoxCollider &>(c1));
+			}
+			else if (s2 == SPHERE) {
+				return IsCollidingCheck(civ, dynamic_cast<const cSphereCollider &>(c2), dynamic_cast<const cBoxCollider &>(c1));
+			}
+			else if (s2 == BOX) {
+				return IsCollidingCheck(civ, dynamic_cast<const cBoxCollider &>(c2), dynamic_cast<const cBoxCollider &>(c1));
+			}
+			else {
+				cout << "Routing Error" << endl;
+				return false;
+			}
+		}
+		return false;
+	}
 }
