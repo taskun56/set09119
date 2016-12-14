@@ -34,20 +34,46 @@ bool IsCollidingCheck(std::vector<collisionInfo> &civ, const cSphereCollider &s,
   // Calculate the distance: dot product of the new vector with the plane's normal
   double distance = dot(vecTemp, p.normal);
 
+
+
   //cout << distance;
 
   if (distance <= s.radius) 
   {
-	  dvec3 collisionPt = sp - p.normal * distance;
+
+	  dvec3 collisionPt = sp - (p.normal * distance);
+	  cout << "Collision detected at " << collisionPt.x << " " << collisionPt.y << " " << collisionPt.z << endl;
+	  vec3 endpoint(collisionPt);
+
+	  endpoint.y += 25.0f;
+
+	  cout << "Line end at " << endpoint.x << " " << endpoint.y << " " << endpoint.z << endl;
+	  phys::DrawLine(collisionPt, endpoint, true, BLUE);
+	  // ball is within range of the plane - test its point projection
+
+	  // need to change both of these to test the normals/positions of a plane perpendicular to the collision plane
+	  // to get the forward and side vectors
+	  // that lets me get the W and D from the reference
+	  vec3 proj_forward = projectOntoPlane(collisionPt, p.normal, p.GetParent()->GetPosition()); 
+	  vec3 proj_right = projectOntoPlane(collisionPt, p.normal, p.GetParent()->GetPosition());
+
+
+
 	  // distance X axis < width = no collision (right vec)
 	  // distance Z axis < depth = no collision (forward vec)
-	  if (length(collisionPt - p.GetParent()->GetPosition()) > 3) {
-		  return false;
+	  //if ((length(collisionPt - p.GetParent()->GetPosition()) > p.GetParent()->getDepth()) || (length(collisionPt - p.GetParent()->GetPosition()) > p.GetParent()->getWidth())) {
+		 // return false;
+	  //}
+	  if ((length(collisionPt.z - proj_forward.z) < p.GetParent()->getDepth()) && (length(collisionPt.x - proj_forward.x) < p.GetParent()->getWidth()))
+	  {
+		  // create the collision here
+		  civ.push_back({ &s, &p, sp - p.normal * distance, p.normal, s.radius - distance });
+		  return true;
 	  }
 	  // create the collision here
-    civ.push_back({&s, &p, sp - p.normal * distance, p.normal, s.radius - distance});
-	//cout << "Sphere plane collision detected" << endl;
-    return true;
+ //   civ.push_back({&s, &p, sp - p.normal * distance, p.normal, s.radius - distance});
+	////cout << "Sphere plane collision detected" << endl;
+ //   return true;
   }
 
   return false;

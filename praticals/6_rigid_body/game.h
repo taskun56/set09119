@@ -34,6 +34,9 @@ protected:
   glm::dquat rotation_;
   glm::dmat4 transform_;
   glm::vec3 normal_;
+  int depth_;
+  int width_;
+  graphics_framework::texture tex_;
   std::vector<std::unique_ptr<Component>> components_;
 
 public:
@@ -49,6 +52,7 @@ public:
   const bool IsVisible() const;
   const std::string GetName() const;
   const glm::vec3 getNormal() const;
+  graphics_framework::texture getTexture();
 
   void SetTransform(const glm::dmat4 m4);
   void SetScale(const glm::dvec3 &v3);
@@ -56,6 +60,13 @@ public:
   void SetRotation(const glm::dvec3 &v3);
   void SetRotation(const glm::dquat &q);
   void setNormal(const glm::vec3 &n);
+  void setSize(unsigned width, unsigned depth);
+  int getDepth();
+  int getWidth();
+  void setColor(phys::RGBAInt32 col);
+  void setTexture(const std::string &filename);
+
+  graphics_framework::texture setTexture();
 
   void SetVisibility(const bool b);
   void SetName(std::string const &name);

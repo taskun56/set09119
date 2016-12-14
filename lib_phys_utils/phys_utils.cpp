@@ -12,6 +12,7 @@ namespace phys
 	effect effP;
 	effect effB;
 	effect effG;
+	effect effT;
 	glm::mat4 PV;
 	directional_light light;
 	material mat;
@@ -30,6 +31,9 @@ namespace phys
 		effG.add_shader("shaders/phys_grid.vert", GL_VERTEX_SHADER);
 		effG.add_shader("shaders/phys_grid.frag", GL_FRAGMENT_SHADER);
 		effG.build();
+		effT = effect();
+		effT.add_shader("shaders/phys_grid.vert", GL_VERTEX_SHADER);
+		effT.add_shader("shaders/phys_grid.frag", GL_FRAGMENT_SHADER);
 		cam.set_position(vec3(0.0f, 10.0f, 10.0f));
 		cam.set_target(vec3(0.0f, 0.0f, 0.0f));
 		auto aspect = static_cast<float>(renderer::get_screen_width()) / static_cast<float>(renderer::get_screen_height());
@@ -251,6 +255,25 @@ namespace phys
 		renderer::render(geom);
 		glEnable(GL_CULL_FACE);
 	}
+
+	//void DrawPlane(const glm::vec3 & p0, const glm::vec3 & norm, const glm::vec3 & scale, const unsigned & width, const unsigned & depth, graphics_framework::texture tex, const RGBAInt32 col)
+	//{
+	//	static geometry geom = geometry_builder::create_plane(width, depth);
+	//	renderer::bind(effP);
+	//	auto M = glm::translate(mat4(1.0f), p0) * glm::scale(mat4(1.0f), scale) * mat4_cast(glm::rotation(vec3(0, 1.0, 0), norm));
+	//	mat3 N(1.0f);
+	//	mat.set_diffuse(col.tovec4());
+	//	renderer::bind(mat, "mat");
+	//	renderer::bind(light, "light");
+	//	renderer::bind(tex, 0);
+	//	glUniform1i(effP.get_uniform_location("tex"), 0);
+	//	glUniformMatrix4fv(effP.get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(PV * M));
+	//	glUniformMatrix4fv(effP.get_uniform_location("M"), 1, GL_FALSE, value_ptr(M));
+	//	glUniformMatrix3fv(effP.get_uniform_location("N"), 1, GL_FALSE, value_ptr(N));
+	//	glDisable(GL_CULL_FACE);
+	//	renderer::render(geom);
+	//	glEnable(GL_CULL_FACE);
+	//}
 
 	void SetCameraPos(const glm::vec3 &p0) 
 	{

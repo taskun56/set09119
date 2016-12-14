@@ -30,7 +30,11 @@ Entity::Entity()
 	scale_ = vec3(1.0f, 1.0f, 1.0f);
 	position_ = vec3(0.0f, 0.0f, 0.0f);
 	rotation_ = quat();
-	colour = RED;
+	colour = BLACK;
+	width_ = NULL;
+	depth_ = NULL;
+	normal_ = vec3(0.0f, 1.0f, 0.0f);
+	tex_ = graphics_framework::texture("resources\\tile.png");
 }
 
 Entity::~Entity() {}
@@ -41,6 +45,37 @@ const dvec3 Entity::GetPosition() const { return position_; }
 
 const dquat Entity::GetRotation() const { return rotation_; }
 const dvec3 Entity::GetRotationV3() const { return glm::eulerAngles(GetRotation()); }
+
+void Entity::setTexture(const string &filename)
+{
+	tex_ = graphics_framework::texture(filename);
+}
+
+graphics_framework::texture Entity::getTexture()
+{
+	return tex_;
+}
+
+void Entity::setSize(unsigned width, unsigned depth)
+{
+	width_ = width;
+	depth_ = depth;
+}
+
+void Entity::setColor(phys::RGBAInt32 col)
+{
+	colour = col;
+}
+
+int Entity::getDepth()
+{
+	return depth_;
+}
+
+int Entity::getWidth()
+{
+	return width_;
+}
 
 const dmat4 Entity::GetTransform()
 {
@@ -156,7 +191,7 @@ void cShapeRenderer::Render() {
 		phys::DrawPlane(pos, norm, vec3(1.0f), Ent_->colour);
 		break;
 	case RAMP:
-		phys::DrawPlane(pos, norm, vec3(1.0f), 6, 12, Ent_->colour);
+		phys::DrawPlane(pos, norm, vec3(1.0f), Ent_->getWidth(), Ent_->getDepth(), Ent_->colour);
 		break;
 	default:
 		cout << "No renderable shape for object type 'shape': " << shape << endl;

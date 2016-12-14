@@ -45,8 +45,8 @@ void ResolveP(cParticle *const b, const collisionInfo &ci, bool which)
 	b->prev_position = b->position + dvec3((-w * ci.normal) * currentSpeed * coef); 
 	// The above line needs to be changed. Currently "bounces" the ball in the direction of the plane's normal on collision.
 	// Needs to be changed to bounce the ball on the mirror angle to the angle of reflection from the plane's normal
-	// e.g. if the ball hits a plane with  anormal of 1 (90 degrees), at an angle of 45 degrees the initial angle of deflection should be 45 degrees to the normal of the plane
-	// Gravity will round out the parabola of the curve
+	// e.g. if the ball hits a plane with a normal of 1 (90 degrees), at an angle of 45 degrees the initial angle of deflection should be 45 degrees to the normal of the plane
+	// Gravity will round out the curve
 
 
 }

@@ -57,6 +57,8 @@ unique_ptr<Entity> CreatePlane(vec3 pos)
 {
 	unique_ptr<Entity> ent(new Entity());
 	ent->SetPosition(pos);
+	ent->setSize(50, 50);
+	ent->setTexture("resources\\wood.png");
 	unique_ptr<Component> physComponent(new cRigidPlane());
 	unique_ptr<cShapeRenderer> renderComponent(new cShapeRenderer(cShapeRenderer::PLANE, phys::RandomColour()));
 	renderComponent->SetColour(phys::RandomColour());
@@ -66,12 +68,14 @@ unique_ptr<Entity> CreatePlane(vec3 pos)
 	ent->SetName("Plane");
 	return ent;
 }
-unique_ptr<Entity> CreateRamp(vec3 pos)
+unique_ptr<Entity> CreateRamp(vec3 pos, phys::RGBAInt32 col)
 {
 	unique_ptr<Entity> ent(new Entity());
 	ent->SetPosition(pos);
+	ent->setColor(col);
+	ent->setSize(12, 12);
 	unique_ptr<Component> physComponent(new cRigidPlane());
-	unique_ptr<cShapeRenderer> renderComponent(new cShapeRenderer(cShapeRenderer::RAMP, phys::RandomColour()));
+	unique_ptr<cShapeRenderer> renderComponent(new cShapeRenderer(cShapeRenderer::RAMP, col));
 	renderComponent->SetColour(phys::RandomColour());
 	ent->AddComponent(physComponent);
 	ent->AddComponent(unique_ptr<Component>(new cPlaneCollider()));
@@ -80,220 +84,6 @@ unique_ptr<Entity> CreateRamp(vec3 pos)
 	return ent;
 }
 
-void addNormals(geometry geom, vec3 normal, int vertices)
-{
-	// need to create a looping method that adds the passed through
-	// normal to the buffer for every vertex on the given quad
-	vector<vec3> normals;
-
-	// for every vertex on the given geom
-	for (int i = 0; i < vertices; i++)
-	{
-		// add the given normal to a vector of normals
-		normals.push_back(normal);
-	}
-
-	// then add those normals to the given geometry's normal buffer
-	geom.add_buffer(normals, BUFFER_INDEXES::NORMAL_BUFFER);
-}
-
-void createGraphics()
-{
-	ramp_b_base.set_type(GL_QUADS);
-
-	// Create quad data
-	// Positions
-	vector<vec3> positions
-	{
-		vec3(-1.0f, 1.0f, 0.0f),
-		vec3(-1.0f, -1.0f, 0.0f),
-		vec3(1.0f, -1.0f, 0.0f),
-		vec3(1.0f, 1.0f, 0.0f)
-	};
-	// Colours
-	vector<vec4> colours
-	{
-		vec4(1.0f, 0.0f, 0.0f, 1.0f),
-		vec4(0.0f, 1.0f, 0.0f, 1.0f),
-		vec4(0.0f, 0.0f, 1.0f, 1.0f),
-		vec4(1.0f, 1.0f, 0.0f, 1.0f)
-	};
-	// Add to the geometry
-	ramp_b_base.add_buffer(positions, BUFFER_INDEXES::POSITION_BUFFER);
-	ramp_b_base.add_buffer(colours, BUFFER_INDEXES::COLOUR_BUFFER);
-
-	// Load in shaders
-	simple_eff.add_shader(
-		"shaders/basic.vert", // filename
-		GL_VERTEX_SHADER); // type
-	simple_eff.add_shader(
-		"shaders/basic.frag", // filename
-		GL_FRAGMENT_SHADER); // type
-							 // Build effect
-
-	simple_eff.build();
-
-	//vector<vec3> tex_coords
-	//{
-	//	vec3(-1.0f, 1.0f, 0.0f),
-	//	vec3(-1.0f, -1.0f, 0.0f),
-	//	vec3(1.0f, -1.0f, 0.0f),
-	//	vec3(1.0f, 1.0f, 0.0f)
-	//};
-
-	//// TOP RAIL
-	//geometry ramp_t_base;				// base of top ramp
-	//ramp_t_base.set_type(GL_QUADS);
-	//
-	//vector<vec3> rtb_positions
-	//{
-	//	// vec3 world space positions for the top ramp base quad
-	//};
-
-	//geometry ramp_t_rail_l;				// left rail of top ramp
-	//vector<vec3> rtl_positions
-	//{
-	//	// vec3 world space positions for the top ramp base quad
-	//};
-
-	//geometry ramp_t_rail_r;				// right rail of top ramp
-	//vector<vec3> rtr_positions
-	//{
-	//	// vec3 world space positions for the top ramp base quad
-	//};
-
-
-
-
-
-	//// MIDDLE RAIL
-	//geometry ramp_m_base;				// base of top ramp
-	//ramp_m_base.set_type(GL_QUADS);
-
-	//vector<vec3> rmb_positions
-	//{
-	//	// vec3 world space positions for the top ramp base quad
-	//};
-
-	//geometry ramp_m_rail_l;				// left rail of top ramp
-	//vector<vec3> rml_positions
-	//{
-	//	// vec3 world space positions for the top ramp base quad
-	//};
-
-	//geometry ramp_m_rail_r;				// right rail of top ramp
-	//vector<vec3> rmr_positions
-	//{
-	//	// vec3 world space positions for the top ramp base quad
-	//};
-
-
-
-
-
-	// BOTTOM RAIL
-	
-	//ramp_b_base.set_type(GL_QUADS);
-
-
-	//vector<vec3> positions
-	//{
-	//	vec3(1.0f, 1.0f, 0.0f),
-	//	vec3(-1.0f, 1.0f, 0.0f),
-	//	vec3(-1.0f, -1.0f, 0.0f),
-	//	vec3(1.0f, -1.0f, 0.0f)
-	//};
-	//vector<vec3> rbb_positions
-	//{
-	//	// vec3 world space positions for the top ramp base quad
-	//	vec3(-3.0f, 1.0f, 0.0f),	// TOP LEFT
-	//	vec3(-3.0f, 0.0f, 0.0f),	// BOTTOM LEFT
-	//	vec3(3.0f, -1.0f, 0.0f),	// BOTTOM RIGHT	
-	//	vec3(3.0f, 0.0f, 0.0f)		// TOP RIGHT
-	//};
-
-	//geometry ramp_b_rail_l;				// left rail of top ramp
-	//vector<vec3> rbl_positions
-	//{
-	//	// vec3 world space positions for the top ramp base quad
-	//	vec3(-3.0f, 0.0f, 0.0f),	// TOP LEFT
-	//	vec3(-3.0f, -1.0f, 0.0f),	// BOTTOM LEFT
-	//	vec3(3.0f, 0.0f, 0.0f),		// BOTTOM RIGHT	
-	//	vec3(3.0f, 1.0f, 0.0f)		// TOP RIGHT
-	//};
-
-	//geometry ramp_b_rail_r;				// right rail of top ramp
-	//vector<vec3> rbr_positions
-	//{
-	//	// vec3 world space positions for the top ramp base quad
-	//	// base quad is viewed from the top and its depth is measured on the Z axis instead of leftright/updown of the railings
-	//	vec3(-3.0f, 0.0f, 1.0f),	// TOP LEFT
-	//	vec3(-3.0f, 0.0f, -1.0f),	// BOTTOM LEFT
-	//	vec3(3.0f, 0.0f, -1.0f),	// BOTTOM RIGHT	
-	//	vec3(3.0f, 0.0f, 1.0f)		// TOP RIGHT
-	//};
-
-
-
-
-
-	//// UNIVERSAL COLOR VECTOR FOR ALL RAMP QUADS
-	//vector<vec4> colors
-	//{
-	//	vec4(1.0f, 0.0F, 0.0f, 1.0f),	// RED CORNER
-	//	vec4(0.0f, 1.0F, 0.0f, 1.0f),	// GREEN CORNER
-	//	vec4(0.0f, 0.0F, 1.0f, 1.0f),	// BLUE CORNER
-	//	vec4(1.0f, 1.0F, 0.0f, 1.0f)	// YELLOW CORNER
-	//};
-
-	//// Ramp bottom base buffer indexes for vector and color
-	//ramp_b_base.add_buffer(positions, BUFFER_INDEXES::POSITION_BUFFER);
-	//ramp_b_base.add_buffer(colors, BUFFER_INDEXES::COLOUR_BUFFER);
-	////addNormals(ramp_b_base, vec3(0.0f, 1.0f, 0.0f), 4);
-	////ramp_b_base.add_buffer(tex_coords, BUFFER_INDEXES::TEXTURE_COORDS_0);
-
-
-	//// shader file path -> ..\\..\\..\\new\\res\\shaders
-	////ramp_b_base = geometry_builder::create_plane(6, 2);
-
-	//simple_eff.add_shader("shaders/phys_basic.vert", GL_VERTEX_SHADER);
-	//simple_eff.add_shader("shaders/phys_basic.frag", GL_FRAGMENT_SHADER);
-	//simple_eff.build();
-	//renderer::bind(simple_eff);
-	//auto M = glm::scale(mat4(1.0f), vec3(10.0f, 5.0, 10.0f));
-	//mat3 N(1.0f);
-	//phys::RGBAInt32 col = GREEN;
-	//mat.set_diffuse(col.tovec4());
-	//renderer::bind(mat, "mat");
-	//renderer::bind(phys::getLight(), "light");
-	//glUniformMatrix4fv(simple_eff.get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(phys::getPV() * M));
-	//glUniformMatrix4fv(simple_eff.get_uniform_location("M"), 1, GL_FALSE, value_ptr(M));
-	//glUniformMatrix3fv(simple_eff.get_uniform_location("N"), 1, GL_FALSE, value_ptr(N));
-	//glDisable(GL_CULL_FACE);
-	//renderer::render(ramp_b_base);
-	//glEnable(GL_CULL_FACE);
-}
-
-void renderGraphics()
-{
-	// Bind effect
-	renderer::bind(simple_eff);
-	// Create MVP matrix
-	auto M = glm::translate(mat4(1.0f), vec3(10.0f, 15.0f, -20.0f)) * glm::scale(mat4(1.0f), vec3(1.0f)) * mat4_cast(glm::rotation(vec3(0, 1.0, 0), vec3(0.0f, 1.0f, 0.0f)));
-	auto V = phys::getCamera()->get_view();
-	auto P = phys::getCamera()->get_projection();
-	auto MVP = P * V * M;
-	mat3 N(1.0f);
-	mat.set_diffuse(vec4(0.0f, 1.0f, 0.0f, 1.0f));
-	renderer::bind(phys::getMaterial(), "mat");
-	renderer::bind(phys::getLight(), "light");
-	glUniformMatrix4fv(simple_eff.get_uniform_location("MVP"), 1, GL_FALSE, value_ptr(P* V * M));
-	glUniformMatrix4fv(simple_eff.get_uniform_location("M"), 1, GL_FALSE, value_ptr(M));
-	glUniformMatrix3fv(simple_eff.get_uniform_location("N"), 1, GL_FALSE, value_ptr(N));
-	glDisable(GL_CULL_FACE);
-	renderer::render(ramp_b_base);
-	//glEnable(GL_CULL_FACE);
-}
 
 bool update(double delta_time)
 {
@@ -384,9 +174,9 @@ bool load_content()
 	SceneList.push_back(CreatePlane(vec3(0.0f, 0.0f, 0.0f)));
 
 	// RAMP PLANES
-	SceneList.push_back(CreateRamp(vec3(5.0f, 10.0f, 0.0f)));
-	//SceneList.push_back(CreatePlane(vec3(2.0f, 20.0f, 0.0f)));
-	//SceneList.push_back(CreatePlane(vec3(3.0f, 30.0f, 0.0f)));
+	SceneList.push_back(CreateRamp(vec3(15.0f, 10.0f, 0.0f), BLUE));
+	SceneList.push_back(CreateRamp(vec3(-12.0f, 20.0f, 0.0f), GREEN));
+	SceneList.push_back(CreateRamp(vec3(3.0f, 30.0f, 0.0f), YELLOW));
 
 
 	phys::SetCameraPos(vec3(-10.0f, 10.0f, 40.0f));
