@@ -44,6 +44,7 @@ const dvec3 Entity::GetScale() const { return scale_; }
 const dvec3 Entity::GetPosition() const { return position_; }
 
 const dquat Entity::GetRotation() const { return rotation_; }
+
 const dvec3 Entity::GetRotationV3() const { return glm::eulerAngles(GetRotation()); }
 
 void Entity::setTexture(const string &filename)
@@ -171,7 +172,7 @@ const vector<unique_ptr<Component>> *Entity::GetComponents() const { return &com
 
 void cShapeRenderer::SetColour(const phys::RGBAInt32 c) { col_ = c; }
 
-cShapeRenderer::cShapeRenderer(SHAPES s, phys::RGBAInt32 color) : shape(s), col_(color) , Component("ShapeRenderer") {}
+cShapeRenderer::cShapeRenderer(SHAPES s, phys::RGBAInt32 color) : shape(s), col_(color), Component("ShapeRenderer") {}
 
 cShapeRenderer::~cShapeRenderer() {}
 
@@ -192,7 +193,8 @@ void cShapeRenderer::Render() {
 		phys::DrawPlane(pos, norm, vec3(1.0f), Ent_->colour);
 		break;
 	case RAMP:
-		phys::DrawPlane(pos, norm, vec3(1.0f), Ent_->getWidth(), Ent_->getDepth(), Ent_->colour);
+		//phys::DrawPlane(pos, norm, vec3(1.0f), Ent_->getWidth(), Ent_->getDepth(), Ent_->colour);
+		phys::DrawPlane(pos, norm, vec3(1.0f), Ent_->getWidth(), Ent_->getDepth(), Ent_->getTexture(), Ent_->colour);
 		break;
 	default:
 		cout << "No renderable shape for object type 'shape': " << shape << endl;
